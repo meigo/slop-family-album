@@ -18,9 +18,15 @@
 		"@sveltejs/adapter-static": "^3.0.10",
 		"@sveltejs/kit": "^2.57.0",
 		"@sveltejs/vite-plugin-svelte": "^7.0.0",
+		"@tailwindcss/vite": "^4.3.0",
 		"svelte": "^5.55.2",
 		"svelte-check": "^4.4.6",
+		"tailwindcss": "^4.3.0",
 		"typescript": "^6.0.2",
 		"vite": "^8.0.7"
+	},
+	"dependencies": {
+		"@fontsource/ibm-plex-mono": "^5.2.7",
+		"lucide-svelte": "^1.0.1"
 	}
 }

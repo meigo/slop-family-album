@@ -1,0 +1,76 @@
+@import 'tailwindcss';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+@import '@fontsource/ibm-plex-mono/600.css';
+
+@theme {
+  --color-bg: #0a0a0a;
+  --color-surface: #18181b;
+  --color-line: #27272a;
+  --color-fg: #f5f5f5;
+  --color-muted: #a1a1aa;
+  --color-danger: #ef4444;
+  --color-warning: #f59e0b;
+  --color-success: #10b981;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+
+:root:not(.dark) {
+  --color-bg: #fafafa;
+  --color-surface: #ffffff;
+  --color-line: #e5e5e5;
+  --color-fg: #171717;
+  --color-muted: #737373;
+}
+
+html, body {
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-mono);
+}
+
+.container-page {
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.surface-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.btn-primary {
+  background: var(--color-fg);
+  color: var(--color-bg);
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  width: 100%;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--color-fg);
+  border: 1px solid var(--color-line);
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-muted);
+  padding: 0.25rem 0.5rem;
+}
+
+.input-base {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  color: var(--color-fg);
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  width: 100%;
+}

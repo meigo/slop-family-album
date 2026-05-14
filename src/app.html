@@ -2,6 +2,13 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
+		<script>
+			(function () {
+				var stored = localStorage.getItem('theme');
+				var dark = stored ? stored === 'dark' : true;
+				if (dark) document.documentElement.classList.add('dark');
+			})();
+		</script>
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="text-scale" content="scale" />
 		%sveltekit.head%

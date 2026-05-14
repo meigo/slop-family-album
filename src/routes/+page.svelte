@@ -1,2 +1,10 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<script lang="ts">
+  import PageHeader from '$lib/components/PageHeader.svelte';
+</script>
+
+<div class="container-page">
+  <PageHeader>
+    <h1 class="text-xl font-medium">Family Album & Calendar Builder</h1>
+  </PageHeader>
+  <p class="text-muted">Phase 1 scaffold.</p>
+</div>
