@@ -24,3 +24,4 @@ log = "0.4"
 tauri = { version = "2.11.1" }
 tauri-plugin-log = "2"
 tauri-plugin-sql = { version = "2.4.0", features = ["sqlite"] }
+tokio = { version = "1.52.3", features = ["full"] }

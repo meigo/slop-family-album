@@ -1,11 +1,20 @@
+mod sidecar;
+
+use sidecar::{sidecar_port, start_sidecar, SidecarState};
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()
+    .manage(SidecarState {
+      port: Default::default(),
+      child: Default::default(),
+    })
     .plugin(
       tauri_plugin_sql::Builder::default()
         .add_migrations("sqlite:app.sqlite", migrations())
         .build(),
     )
+    .invoke_handler(tauri::generate_handler![sidecar_port])
     .setup(|app| {
       if cfg!(debug_assertions) {
         app.handle().plugin(
@@ -14,6 +23,12 @@ pub fn run() {
             .build(),
         )?;
       }
+      let handle = app.handle().clone();
+      tauri::async_runtime::spawn(async move {
+        if let Err(e) = start_sidecar(&handle).await {
+          eprintln!("Sidecar failed to start: {e}");
+        }
+      });
       Ok(())
     })
     .run(tauri::generate_context!())
