@@ -67,3 +67,14 @@ export async function countPhotos(projectId: number): Promise<number> {
   );
   return rows[0]?.n ?? 0;
 }
+
+// Used by the indexer to skip files that haven't changed on disk since the
+// last index pass. Returns a map of source path → indexed_at (ms epoch).
+export async function listIndexedAtByPath(projectId: number): Promise<Map<string, number>> {
+  const d = await db();
+  const rows = await d.select<{ path: string; indexed_at: number }[]>(
+    'SELECT path, indexed_at FROM photo WHERE project_id = ?',
+    [projectId]
+  );
+  return new Map(rows.map((r) => [r.path, r.indexed_at]));
+}

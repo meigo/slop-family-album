@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 import { appDataDir, join } from '@tauri-apps/api/path';
-import { upsertPhoto, getProject } from '$lib/db';
+import { upsertPhoto, getProject, listIndexedAtByPath } from '$lib/db';
 import { readExifViaSidecar, makeThumbViaSidecar } from '$lib/sidecar/client';
 import { indexProgress } from './progress';
 
@@ -14,6 +14,10 @@ export async function indexProject(projectId: number): Promise<void> {
   const files = await invoke<ScannedFile[]>('walk_image_dir', { dir: project.source_dir });
   const total = files.length;
 
+  // Skip files whose source mtime is older than our last index pass for
+  // that path. New files and edited files still get processed.
+  const lastIndexedByPath = await listIndexedAtByPath(projectId);
+
   const appDir = await appDataDir();
   const thumbDir = await join(appDir, 'projects', String(projectId), 'thumbs');
 
@@ -22,6 +26,13 @@ export async function indexProject(projectId: number): Promise<void> {
   for (let i = 0; i < files.length; i++) {
     const f = files[i];
     indexProgress.update((p) => ({ ...p, scanned: i, current: f.path }));
+
+    const prev = lastIndexedByPath.get(f.path);
+    if (prev !== undefined && prev >= f.modified * 1000) {
+      // Already indexed at or after the file's current mtime — skip.
+      continue;
+    }
+
     try {
       const sha256 = await invoke<string>('hash_file', { path: f.path });
       const exif = await readExifViaSidecar(f.path);
