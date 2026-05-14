@@ -22,19 +22,26 @@ pub async fn start_sidecar(app: &AppHandle) -> Result<u16, String> {
     resource_dir.join("sidecar")
   };
 
-  // On Windows, `npx` is `npx.cmd` (a batch wrapper); a bare `npx` lookup
-  // fails because Windows resolves executables by literal name + a small set
-  // of extensions, and `Command::new` doesn't try `.cmd` automatically.
-  let npx = if cfg!(windows) { "npx.cmd" } else { "npx" };
+  // Bypass `npx` / `npx.cmd` entirely and invoke `node` with tsx's CLI as
+  // the main script. This avoids the Windows .cmd argument-escaping mess
+  // (post-BatBadBut, Rust's escaping for .cmd files can mangle paths
+  // containing `:`, which truncates the script arg to `D:` on a Windows
+  // drive — see node:fs EISDIR on lstat 'D:').
+  let tsx_cli = sidecar_dir
+    .join("node_modules")
+    .join("tsx")
+    .join("dist")
+    .join("cli.mjs");
+  let server_ts = sidecar_dir.join("src").join("server.ts");
 
-  let mut child = Command::new(npx)
-    .arg("tsx")
-    .arg(sidecar_dir.join("src/server.ts"))
+  let mut child = Command::new("node")
+    .arg(&tsx_cli)
+    .arg(&server_ts)
     .stdout(Stdio::piped())
     .stderr(Stdio::inherit())
     .current_dir(&sidecar_dir)
     .spawn()
-    .map_err(|e| format!("spawn sidecar ({npx}): {e}"))?;
+    .map_err(|e| format!("spawn sidecar (node {}): {e}", tsx_cli.display()))?;
 
   let stdout = child.stdout.take().ok_or("no stdout")?;
   let mut reader = BufReader::new(stdout).lines();
