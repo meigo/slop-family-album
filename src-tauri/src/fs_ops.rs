@@ -42,7 +42,9 @@ pub fn hash_file(path: String) -> Result<String, String> {
     let f = File::open(Path::new(&path)).map_err(|e| format!("open: {e}"))?;
     let mut reader = BufReader::with_capacity(1 << 20, f);
     let mut hasher = Sha256::new();
-    let mut buf = [0u8; 1 << 20];
+    // Heap-allocated buffer — Windows main-thread stack is ~1MB so a 1MB
+    // stack array (`[0u8; 1 << 20]`) overflows on the first call.
+    let mut buf = vec![0u8; 1 << 20];
     loop {
         let n = reader.read(&mut buf).map_err(|e| format!("read: {e}"))?;
         if n == 0 { break; }
