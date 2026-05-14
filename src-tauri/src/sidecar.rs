@@ -22,14 +22,19 @@ pub async fn start_sidecar(app: &AppHandle) -> Result<u16, String> {
     resource_dir.join("sidecar")
   };
 
-  let mut child = Command::new("npx")
+  // On Windows, `npx` is `npx.cmd` (a batch wrapper); a bare `npx` lookup
+  // fails because Windows resolves executables by literal name + a small set
+  // of extensions, and `Command::new` doesn't try `.cmd` automatically.
+  let npx = if cfg!(windows) { "npx.cmd" } else { "npx" };
+
+  let mut child = Command::new(npx)
     .arg("tsx")
     .arg(sidecar_dir.join("src/server.ts"))
     .stdout(Stdio::piped())
     .stderr(Stdio::inherit())
     .current_dir(&sidecar_dir)
     .spawn()
-    .map_err(|e| format!("spawn sidecar: {e}"))?;
+    .map_err(|e| format!("spawn sidecar ({npx}): {e}"))?;
 
   let stdout = child.stdout.take().ok_or("no stdout")?;
   let mut reader = BufReader::new(stdout).lines();

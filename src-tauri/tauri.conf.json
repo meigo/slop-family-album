@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "slop-family-album",
+  "productName": "Family Album",
   "version": "0.1.0",
   "identifier": "eu.spacetime.slop.family-album",
   "build": {
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "slop-family-album",
+        "title": "Family Album",
         "width": 800,
         "height": 600,
         "resizable": true,
