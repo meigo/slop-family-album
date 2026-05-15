@@ -3,6 +3,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from server.blur import laplacian_variance
+from server.faces import detect_faces
 from server.phash import perceptual_hash
 
 
@@ -11,6 +12,10 @@ class BlurRequest(BaseModel):
 
 
 class PhashRequest(BaseModel):
+    path: str
+
+
+class FacesRequest(BaseModel):
     path: str
 
 
@@ -36,5 +41,15 @@ def build_app() -> FastAPI:
             return {"phash": perceptual_hash(req.path)}
         except FileNotFoundError as e:
             raise HTTPException(status_code=404, detail=str(e))
+
+    @app.post("/faces")
+    async def faces(req: FacesRequest) -> dict[str, object]:
+        try:
+            boxes = detect_faces(req.path)
+            return {"count": len(boxes), "boxes": boxes}
+        except FileNotFoundError as e:
+            raise HTTPException(status_code=404, detail=str(e))
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
 
     return app
