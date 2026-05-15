@@ -22,6 +22,11 @@
     await indexProject(data.project.id);
     await invalidateAll();
   }
+
+  async function runReCv() {
+    await indexProject(data.project.id, { forceCv: true });
+    await invalidateAll();
+  }
 </script>
 
 <div class="container-page">
@@ -38,6 +43,15 @@
     <div class="flex gap-2 mt-3">
       <button type="button" class="btn-primary" onclick={runIndex} disabled={mine && (pStateLocal.phase === 'walking' || pStateLocal.phase === 'indexing')}>
         {(!mine || pStateLocal.phase === 'idle' || pStateLocal.phase === 'done') ? 'Index now' : 'Indexing…'}
+      </button>
+      <button
+        type="button"
+        class="btn-secondary"
+        onclick={runReCv}
+        disabled={mine && (pStateLocal.phase === 'walking' || pStateLocal.phase === 'indexing')}
+        title="Force-recompute CV scores for all photos (use after the blur/faces algorithm changes)"
+      >
+        Re-run CV
       </button>
       <a class="btn-secondary" href={`/projects/${data.project.id}/library`}>Open library</a>
     </div>

@@ -132,6 +132,15 @@ export async function clearDuplicateGroups(projectId: number): Promise<void> {
   await d.execute('DELETE FROM duplicate_group WHERE project_id = ?', [projectId]);
 }
 
+export async function clearCvScores(projectId: number): Promise<void> {
+  const d = await db();
+  await d.execute(
+    `DELETE FROM cv_score
+     WHERE photo_id IN (SELECT id FROM photo WHERE project_id = ?)`,
+    [projectId]
+  );
+}
+
 export async function insertDuplicateGroup(args: {
   project_id: number;
   representative_photo_id: number;

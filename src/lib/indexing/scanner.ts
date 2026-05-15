@@ -3,6 +3,7 @@ import { appDataDir, join } from '@tauri-apps/api/path';
 import {
   upsertPhoto, getProject, listIndexedAtByPath,
   upsertCvScore, listCvComputedAtByPhotoId, listPhotos,
+  clearCvScores,
 } from '$lib/db';
 import { readExifViaSidecar, makeThumbViaSidecar } from '$lib/sidecar/client';
 import { blurViaPy, phashViaPy, facesViaPy } from '$lib/sidecar/py-client';
@@ -11,7 +12,10 @@ import { detectDuplicates } from './dedup';
 
 interface ScannedFile { path: string; size: number; modified: number; }
 
-export async function indexProject(projectId: number): Promise<void> {
+export async function indexProject(
+  projectId: number,
+  opts?: { forceCv?: boolean }
+): Promise<void> {
   const project = await getProject(projectId);
   if (!project) throw new Error(`Project ${projectId} not found`);
 
@@ -61,6 +65,9 @@ export async function indexProject(projectId: number): Promise<void> {
 
   // ---- CV PASS ----
   indexProgress.update((p) => ({ ...p, phase: 'indexing', current: 'running CV pass…' }));
+  if (opts?.forceCv) {
+    await clearCvScores(projectId);
+  }
   const photos = await listPhotos(projectId);
   const cvComputed = await listCvComputedAtByPhotoId(projectId);
 
