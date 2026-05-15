@@ -58,3 +58,48 @@ export interface DuplicateGroupRow {
   representative_photo_id: number;
   created_at: number;
 }
+
+export interface ImageEmbeddingRow {
+  photo_id: number;
+  model: string;
+  vector: Uint8Array;
+  computed_at: number;
+}
+
+export interface PhotoTagRow {
+  photo_id: number;
+  tag: string;
+  score: number;
+}
+
+export interface FaceRow {
+  id: number;
+  photo_id: number;
+  bbox_x: number;
+  bbox_y: number;
+  bbox_w: number;
+  bbox_h: number;
+  embedding: Uint8Array;
+  quality: number | null;
+  cluster_id: number | null;
+  computed_at: number;
+}
+
+export interface FaceInsert {
+  photo_id: number;
+  bbox_x: number;
+  bbox_y: number;
+  bbox_w: number;
+  bbox_h: number;
+  embedding: Uint8Array;
+  quality: number | null;
+  computed_at: number;
+}
+
+export interface PersonClusterRow {
+  id: number;
+  project_id: number;
+  name: string | null;
+  is_pinned: number;
+  created_at: number;
+}

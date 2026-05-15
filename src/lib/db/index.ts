@@ -1,5 +1,5 @@
 import Database from '@tauri-apps/plugin-sql';
-import type { ProjectRow, PhotoRow, PhotoInsert, CvScoreRow, CvScoreInsert } from './types';
+import type { ProjectRow, PhotoRow, PhotoInsert, CvScoreRow, CvScoreInsert, FaceRow, FaceInsert, PersonClusterRow } from './types';
 
 let _db: Database | null = null;
 
@@ -173,4 +173,128 @@ export async function listDuplicateMembersByPhoto(projectId: number): Promise<Ma
     [projectId]
   );
   return new Map(rows.map((r) => [r.photo_id, r.group_id]));
+}
+
+export async function upsertImageEmbedding(args: {
+  photo_id: number;
+  model: string;
+  vector: Uint8Array;
+  computed_at: number;
+}): Promise<void> {
+  const d = await db();
+  await d.execute(
+    `INSERT INTO image_embedding (photo_id, model, vector, computed_at)
+     VALUES (?, ?, ?, ?)
+     ON CONFLICT (photo_id) DO UPDATE SET
+       model = excluded.model,
+       vector = excluded.vector,
+       computed_at = excluded.computed_at`,
+    [args.photo_id, args.model, args.vector, args.computed_at]
+  );
+}
+
+export async function listImageEmbeddingsComputedAt(projectId: number): Promise<Map<number, number>> {
+  const d = await db();
+  const rows = await d.select<{ photo_id: number; computed_at: number }[]>(
+    `SELECT image_embedding.photo_id, image_embedding.computed_at
+     FROM image_embedding
+     INNER JOIN photo ON photo.id = image_embedding.photo_id
+     WHERE photo.project_id = ?`,
+    [projectId]
+  );
+  return new Map(rows.map((r) => [r.photo_id, r.computed_at]));
+}
+
+export async function replacePhotoTags(photoId: number, tags: Array<{ tag: string; score: number }>): Promise<void> {
+  const d = await db();
+  await d.execute('DELETE FROM photo_tag WHERE photo_id = ?', [photoId]);
+  for (const t of tags) {
+    await d.execute(
+      'INSERT INTO photo_tag (photo_id, tag, score) VALUES (?, ?, ?)',
+      [photoId, t.tag, t.score]
+    );
+  }
+}
+
+export async function listTopTagByPhoto(projectId: number): Promise<Map<number, { tag: string; score: number }>> {
+  const d = await db();
+  const rows = await d.select<{ photo_id: number; tag: string; score: number }[]>(
+    `SELECT pt.photo_id, pt.tag, pt.score
+     FROM photo_tag pt
+     INNER JOIN photo p ON p.id = pt.photo_id
+     WHERE p.project_id = ?
+       AND pt.score = (
+         SELECT MAX(score) FROM photo_tag WHERE photo_id = pt.photo_id
+       )`,
+    [projectId]
+  );
+  return new Map(rows.map((r) => [r.photo_id, { tag: r.tag, score: r.score }]));
+}
+
+export async function clearFacesForPhoto(photoId: number): Promise<void> {
+  const d = await db();
+  await d.execute('DELETE FROM face WHERE photo_id = ?', [photoId]);
+}
+
+export async function insertFace(f: FaceInsert): Promise<number> {
+  const d = await db();
+  const r = await d.execute(
+    `INSERT INTO face (photo_id, bbox_x, bbox_y, bbox_w, bbox_h, embedding, quality, computed_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [f.photo_id, f.bbox_x, f.bbox_y, f.bbox_w, f.bbox_h, f.embedding, f.quality, f.computed_at]
+  );
+  return r.lastInsertId as number;
+}
+
+export async function listFacesByProject(projectId: number): Promise<FaceRow[]> {
+  const d = await db();
+  return d.select<FaceRow[]>(
+    `SELECT face.*
+     FROM face
+     INNER JOIN photo ON photo.id = face.photo_id
+     WHERE photo.project_id = ?
+     ORDER BY face.id ASC`,
+    [projectId]
+  );
+}
+
+export async function setFaceCluster(faceId: number, clusterId: number | null): Promise<void> {
+  const d = await db();
+  await d.execute('UPDATE face SET cluster_id = ? WHERE id = ?', [clusterId, faceId]);
+}
+
+export async function clearPersonClusters(projectId: number): Promise<void> {
+  const d = await db();
+  // ON DELETE SET NULL on face.cluster_id keeps face rows; clusters disappear.
+  await d.execute('DELETE FROM person_cluster WHERE project_id = ?', [projectId]);
+}
+
+export async function insertPersonCluster(projectId: number): Promise<number> {
+  const d = await db();
+  const r = await d.execute(
+    'INSERT INTO person_cluster (project_id, name, is_pinned, created_at) VALUES (?, NULL, 0, ?)',
+    [projectId, Date.now()]
+  );
+  return r.lastInsertId as number;
+}
+
+export async function listPersonClusters(projectId: number): Promise<PersonClusterRow[]> {
+  const d = await db();
+  return d.select<PersonClusterRow[]>(
+    'SELECT * FROM person_cluster WHERE project_id = ? ORDER BY created_at ASC',
+    [projectId]
+  );
+}
+
+export async function updatePersonCluster(id: number, args: { name?: string | null; is_pinned?: boolean }): Promise<void> {
+  const d = await db();
+  if (args.name !== undefined) {
+    await d.execute('UPDATE person_cluster SET name = ? WHERE id = ?', [args.name, id]);
+  }
+  if (args.is_pinned !== undefined) {
+    await d.execute(
+      'UPDATE person_cluster SET is_pinned = ? WHERE id = ?',
+      [args.is_pinned ? 1 : 0, id]
+    );
+  }
 }
