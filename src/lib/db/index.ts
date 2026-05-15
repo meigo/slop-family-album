@@ -1,5 +1,9 @@
 import Database from '@tauri-apps/plugin-sql';
-import type { ProjectRow, PhotoRow, PhotoInsert, CvScoreRow, CvScoreInsert, FaceRow, FaceInsert, PersonClusterRow } from './types';
+import type {
+  ProjectRow, PhotoRow, PhotoInsert, CvScoreRow, CvScoreInsert,
+  FaceRow, FaceInsert, PersonClusterRow,
+  SelectionRow, SelectedPhotoRow, SelectedPhotoInsert,
+} from './types';
 
 let _db: Database | null = null;
 
@@ -319,5 +323,55 @@ export async function resetFaceClustersForProject(projectId: number): Promise<vo
     `UPDATE face SET cluster_id = NULL
      WHERE photo_id IN (SELECT id FROM photo WHERE project_id = ?)`,
     [projectId]
+  );
+}
+
+// Mark all existing selections for this (project, kind) as no-longer-current,
+// then insert a new one. Returns the new selection_id.
+export async function startSelection(projectId: number, kind: 'album' | 'calendar'): Promise<number> {
+  const d = await db();
+  await d.execute(
+    'UPDATE selection SET is_current = 0 WHERE project_id = ? AND kind = ?',
+    [projectId, kind]
+  );
+  const result = await d.execute(
+    'INSERT INTO selection (project_id, kind, generated_at, is_current) VALUES (?, ?, ?, 1)',
+    [projectId, kind, Date.now()]
+  );
+  return result.lastInsertId as number;
+}
+
+export async function insertSelectedPhoto(args: SelectedPhotoInsert): Promise<void> {
+  const d = await db();
+  await d.execute(
+    `INSERT INTO selected_photo (selection_id, photo_id, bucket_key, rank, score, user_state)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [
+      args.selection_id, args.photo_id, args.bucket_key, args.rank,
+      args.score, args.user_state ?? 'auto',
+    ]
+  );
+}
+
+export async function getCurrentSelection(projectId: number, kind: 'album' | 'calendar'): Promise<SelectionRow | null> {
+  const d = await db();
+  const rows = await d.select<SelectionRow[]>(
+    'SELECT * FROM selection WHERE project_id = ? AND kind = ? AND is_current = 1 LIMIT 1',
+    [projectId, kind]
+  );
+  return rows[0] ?? null;
+}
+
+// Returns selected photos for a selection, ordered by bucket_key (chronological
+// for album, calendar) then rank within bucket. Joins photo for path + thumb.
+export async function listSelectedPhotos(selectionId: number): Promise<Array<SelectedPhotoRow & { path: string; thumb_path: string | null; taken_at: number | null }>> {
+  const d = await db();
+  return d.select<Array<SelectedPhotoRow & { path: string; thumb_path: string | null; taken_at: number | null }>>(
+    `SELECT sp.*, p.path, p.thumb_path, p.taken_at
+     FROM selected_photo sp
+     INNER JOIN photo p ON p.id = sp.photo_id
+     WHERE sp.selection_id = ?
+     ORDER BY sp.bucket_key ASC, sp.rank ASC`,
+    [selectionId]
   );
 }

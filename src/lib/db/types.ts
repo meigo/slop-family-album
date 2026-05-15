@@ -103,3 +103,29 @@ export interface PersonClusterRow {
   is_pinned: number;
   created_at: number;
 }
+
+export interface SelectionRow {
+  id: number;
+  project_id: number;
+  kind: string;
+  generated_at: number;
+  is_current: number;
+}
+
+export interface SelectedPhotoRow {
+  selection_id: number;
+  photo_id: number;
+  bucket_key: string;
+  rank: number;
+  score: number | null;
+  user_state: string;
+}
+
+export interface SelectedPhotoInsert {
+  selection_id: number;
+  photo_id: number;
+  bucket_key: string;
+  rank: number;
+  score: number | null;
+  user_state?: string;
+}
