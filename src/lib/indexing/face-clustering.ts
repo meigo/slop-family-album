@@ -4,7 +4,14 @@ import {
 } from '$lib/db';
 
 const INITIAL_THRESHOLD = 0.30;
-const MERGE_THRESHOLD = 0.25;
+// Centroid-merge cutoff. Tuned for family albums with lookalikes:
+// - Within-person mode pairs typically score 0.55-0.75 cosine.
+// - Across-person (esp. family members who look alike) score 0.35-0.45.
+// 0.50 sits comfortably above the across-family-member band without
+// requiring identical modes to merge. Raise toward 0.60 if related
+// people are getting merged, lower toward 0.40 if same-person modes
+// stay split.
+const MERGE_THRESHOLD = 0.50;
 const LINKAGE_THRESHOLD = 0.55;
 const CLUSTER_MATCH_THRESHOLD = 0.50;   // for matching new clusters to preserved-name/pin existing clusters
 const SEED_QUALITY_FLOOR = 0.1;
