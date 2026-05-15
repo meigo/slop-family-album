@@ -68,5 +68,11 @@ fn migrations() -> Vec<tauri_plugin_sql::Migration> {
       sql: include_str!("../migrations/002_cv_pipeline.sql"),
       kind: tauri_plugin_sql::MigrationKind::Up,
     },
+    tauri_plugin_sql::Migration {
+      version: 3,
+      description: "semantic_cv_embeddings_tags_faces",
+      sql: include_str!("../migrations/003_semantic_cv.sql"),
+      kind: tauri_plugin_sql::MigrationKind::Up,
+    },
   ]
 }
