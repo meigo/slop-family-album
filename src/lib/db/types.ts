@@ -40,6 +40,7 @@ export interface CvScoreRow {
   faces_count: number | null;
   faces_json: string | null;
   phash: string | null;
+  exposure: number | null;
   computed_at: number;
 }
 
