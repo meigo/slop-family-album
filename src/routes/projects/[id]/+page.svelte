@@ -2,8 +2,10 @@
   import PageHeader from '$lib/components/PageHeader.svelte';
   import { indexProject } from '$lib/indexing/scanner';
   import { indexProgress, type IndexProgress } from '$lib/indexing/progress';
-  import { invalidateAll } from '$app/navigation';
+  import { invalidateAll, goto } from '$app/navigation';
   import { onMount } from 'svelte';
+  import { generateAlbumSelection } from '$lib/selection/album';
+  import { generateCalendarSelection } from '$lib/selection/calendar';
 
   let { data } = $props();
 
@@ -26,6 +28,28 @@
   async function runReCv() {
     await indexProject(data.project.id, { forceCv: true });
     await invalidateAll();
+  }
+
+  let generating = $state<null | 'album' | 'calendar'>(null);
+
+  async function runGenerateAlbum() {
+    generating = 'album';
+    try {
+      await generateAlbumSelection(data.project.id);
+      await goto(`/projects/${data.project.id}/selection/album`);
+    } finally {
+      generating = null;
+    }
+  }
+
+  async function runGenerateCalendar() {
+    generating = 'calendar';
+    try {
+      await generateCalendarSelection(data.project.id);
+      await goto(`/projects/${data.project.id}/selection/calendar`);
+    } finally {
+      generating = null;
+    }
   }
 </script>
 
@@ -55,6 +79,14 @@
       </button>
       <a class="btn-secondary" href={`/projects/${data.project.id}/people`}>People</a>
       <a class="btn-secondary" href={`/projects/${data.project.id}/library`}>Open library</a>
+    </div>
+    <div class="flex gap-2 mt-3">
+      <button type="button" class="btn-primary" onclick={runGenerateAlbum} disabled={generating !== null}>
+        {generating === 'album' ? 'Generating album…' : 'Generate album'}
+      </button>
+      <button type="button" class="btn-primary" onclick={runGenerateCalendar} disabled={generating !== null}>
+        {generating === 'calendar' ? 'Generating calendar…' : 'Generate calendar'}
+      </button>
     </div>
     {#if mine && pStateLocal.phase === 'walking'}
       <p class="mt-3 text-sm" style="color: var(--color-muted)">Walking folder…</p>
