@@ -8,9 +8,11 @@ Local-first desktop app for building printed family photo albums and seasonal-me
 
 **Phase 2a (CV pipeline) — complete.** Python sidecar runs blur + face detection + perceptual hash on every indexed photo. Duplicate groups are detected via pHash Hamming distance.
 
-**Phase 2b (Semantic CV) — complete.** Image embeddings (OpenCLIP ViT-B/32 quickgelu), zero-shot scene tags, per-face SFace embeddings, face clustering, and exposure scoring. People page lets you name face clusters and pin "must-include" ones. Library grid shows the top scene tag per photo.
+**Phase 2b (Semantic CV) — complete.** Image embeddings (OpenCLIP), zero-shot scene tags, SFace face embeddings, face clustering, exposure scoring. People page lets you name face clusters and pin "must-include" ones.
 
-Phase 3 (selection + layout) and Phase 4 (PDF export + LLM captions) are planned but not yet implemented.
+**Phase 3a (Selection) — complete.** Aggregate scoring + chronological album selection + seasonal-memory calendar selection. Dashboard has Generate buttons; selection view at `/projects/[id]/selection/[kind]` shows the ordered list bucket-by-bucket with thumbnails, rank, and score.
+
+Phase 3b (page layout + review UI) and Phase 4 (PDF export + LLM captions) are planned but not yet implemented.
 
 See `docs/superpowers/specs/2026-05-14-family-album-builder-design.md` for the design.
 
