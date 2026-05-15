@@ -42,10 +42,18 @@ pub fn run() {
 }
 
 fn migrations() -> Vec<tauri_plugin_sql::Migration> {
-  vec![tauri_plugin_sql::Migration {
-    version: 1,
-    description: "initial_phase_1_schema",
-    sql: include_str!("../migrations/001_initial.sql"),
-    kind: tauri_plugin_sql::MigrationKind::Up,
-  }]
+  vec![
+    tauri_plugin_sql::Migration {
+      version: 1,
+      description: "initial_phase_1_schema",
+      sql: include_str!("../migrations/001_initial.sql"),
+      kind: tauri_plugin_sql::MigrationKind::Up,
+    },
+    tauri_plugin_sql::Migration {
+      version: 2,
+      description: "cv_pipeline_blur_faces_phash_dups",
+      sql: include_str!("../migrations/002_cv_pipeline.sql"),
+      kind: tauri_plugin_sql::MigrationKind::Up,
+    },
+  ]
 }
