@@ -6,7 +6,8 @@
   import EmptySlotBg from './EmptySlotBg.svelte';
   import { parseYearMonth } from '$lib/calendar/grid';
   import CalendarGrid from './CalendarGrid.svelte';
-  import type { CalendarEventRow } from '$lib/db/types';
+  import TextOverlay from './TextOverlay.svelte';
+  import type { CalendarEventRow, PageTextRow } from '$lib/db/types';
 
   interface Slot {
     slot_index: number;
@@ -41,8 +42,11 @@
     pageTitle?: string | null;
     events?: CalendarEventRow[];
     weekStart?: 0 | 1;
+    texts?: PageTextRow[];
+    editingTextId?: number | null;
+    onEditText?: (textId: number) => void;
   }
-  let { templateId, slots, onSlotClick, onSwapPhoto, onAdjustCrop, editingSlotIndex = null, slotGapPx = 2, pagePaddingPx = 0, pageTitle = null, events = [], weekStart = 1 }: Props = $props();
+  let { templateId, slots, onSlotClick, onSwapPhoto, onAdjustCrop, editingSlotIndex = null, slotGapPx = 2, pagePaddingPx = 0, pageTitle = null, events = [], weekStart = 1, texts = [], editingTextId = null, onEditText }: Props = $props();
 
   let tpl = $derived<Template>(getTemplate(templateId));
   let aspectRatio = $derived(tpl.aspect === 'square' ? '1 / 1' : '4 / 3');
@@ -168,4 +172,15 @@
       </div>
     {/if}
   {/if}
+
+  {#each texts as text (text.id)}
+    {#if editingTextId !== text.id}
+      <TextOverlay
+        {text}
+        {pagePaddingPx}
+        interactive={!!onEditText}
+        onClick={() => onEditText?.(text.id)}
+      />
+    {/if}
+  {/each}
 </div>

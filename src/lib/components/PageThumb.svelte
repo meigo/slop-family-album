@@ -1,6 +1,8 @@
 <script lang="ts">
   import { getTemplate, type Template } from '$lib/layout/templates';
   import { convertFileSrc } from '@tauri-apps/api/core';
+  import TextOverlay from './TextOverlay.svelte';
+  import type { PageTextRow } from '$lib/db/types';
 
   interface Slot {
     slot_index: number;
@@ -13,8 +15,9 @@
     templateId: string;
     slots: Slot[];
     width: number;             // px
+    texts?: PageTextRow[];
   }
-  let { templateId, slots, width }: Props = $props();
+  let { templateId, slots, width, texts = [] }: Props = $props();
 
   let tpl = $derived<Template>(getTemplate(templateId));
   let aspectRatio = $derived(tpl.aspect === 'square' ? '1 / 1' : '4 / 3');
@@ -75,4 +78,8 @@
       </div>
     </div>
   {/if}
+
+  {#each texts as text (text.id)}
+    <TextOverlay {text} pagePaddingPx={0} interactive={false} />
+  {/each}
 </div>
