@@ -4,21 +4,23 @@ Local-first desktop app for building printed family photo albums and seasonal-me
 
 ## Status
 
-**Phase 1 (Foundation) — complete.** Index folder → SQLite with thumbnails + EXIF.
+**Phase 1 (Foundation) — complete.** Index folder → SQLite with thumbnails + EXIF, library grid.
 
-**Phase 2a (CV pipeline) — complete.** Blur + face detection + pHash dedup.
+**Phase 2a (CV pipeline) — complete.** Blur + face detection + perceptual hash; pHash duplicate groups.
 
-**Phase 2b (Semantic CV) — complete.** OpenCLIP embeddings + scene tags + SFace + exposure.
+**Phase 2b (Semantic CV) — complete.** OpenCLIP embeddings, scene tags, SFace face embeddings, exposure scoring.
 
 **Phase 3a (Selection) — complete.** Aggregate scoring + album/calendar selection.
 
 **Phase 3b (Layout + Review) — complete.** Auto-composed pages + popup picker.
 
-**Phase 3c (Review power) — complete.** Per-page template dropdown + reorder + delete.
+**Phase 3c (Review power) — complete.** Per-page template dropdown, reorder, delete.
 
-**Phase 3e (Sorter view) — complete.** Thumbnail-grid sorter view with drag-to-reorder for both album and calendar. Up/down arrows from Phase 3c still work for fine adjustments.
+**Phase 3d (Slot transform + auto-position) — complete.** Drag-to-reposition + scroll/pinch zoom inside any slot, face-aware default crop (no AI needed — uses Phase 2a face data), insert blank pages anywhere in the album.
 
-Phase 3d (slot transforms + auto-position) and Phase 4 (PDF export + LLM captions) are planned but not yet implemented.
+**Phase 3e (Sorter view) — complete.** Drag-reorder pages from a thumbnail-grid view.
+
+Phase 4 (PDF export + LLM captions + optional per-photo color) is planned but not yet implemented.
 
 See `docs/superpowers/specs/2026-05-14-family-album-builder-design.md` for the design.
 
