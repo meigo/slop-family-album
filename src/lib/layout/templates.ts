@@ -22,6 +22,9 @@ export interface Template {
   slots: SlotLayout[];
   aspect: 'square' | 'landscape';
   label: string;
+  /** When present, the page renderer draws a calendar grid in this
+   *  rectangle. Used by calendar templates. */
+  calendarGrid?: SlotLayout;
 }
 
 export const TEMPLATES: Record<string, Template> = {
@@ -136,9 +139,10 @@ export const TEMPLATES: Record<string, Template> = {
   'cal-month': {
     id: 'cal-month',
     slot_count: 1,
-    slots: [{ x: 0, y: 0, w: 1, h: 1 }],
+    slots: [{ x: 0, y: 0, w: 1, h: 0.55 }],
     aspect: 'landscape',
     label: '1 photo (calendar month)',
+    calendarGrid: { x: 0, y: 0.55, w: 1, h: 0.45 },
   },
 };
 

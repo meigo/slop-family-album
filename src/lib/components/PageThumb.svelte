@@ -55,4 +55,24 @@
       </div>
     </div>
   {/each}
+
+  {#if tpl.calendarGrid}
+    <div
+      class="absolute"
+      style="
+        left: {tpl.calendarGrid.x * 100}%;
+        top: {tpl.calendarGrid.y * 100}%;
+        width: {tpl.calendarGrid.w * 100}%;
+        height: {tpl.calendarGrid.h * 100}%;
+        background: rgba(255,255,255,0.95);
+        border: 1px solid var(--color-line);
+      "
+    >
+      <div class="w-full h-full grid grid-cols-7 grid-rows-6" style="padding: 1px; gap: 1px;">
+        {#each Array(42) as _}
+          <div style="background: #d4d4d4; border-radius: 1px;"></div>
+        {/each}
+      </div>
+    </div>
+  {/if}
 </div>

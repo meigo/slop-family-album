@@ -4,6 +4,9 @@
   import { parseTransform, cssForTransform, type SlotTransform, IDENTITY_TRANSFORM } from '$lib/layout/transform';
   import { autoPositionTransform } from '$lib/layout/autoposition';
   import EmptySlotBg from './EmptySlotBg.svelte';
+  import { parseYearMonth } from '$lib/calendar/grid';
+  import CalendarGrid from './CalendarGrid.svelte';
+  import type { CalendarEventRow } from '$lib/db/types';
 
   interface Slot {
     slot_index: number;
@@ -32,8 +35,14 @@
      *  0 = slots run flush to the page's frame; the only outer space is
      *  the half-gap a slot's own padding contributes. */
     pagePaddingPx?: number;
+    /** Optional calendar context. When provided AND the template declares
+     *  a `calendarGrid` field, the renderer draws a calendar grid at those
+     *  coordinates. */
+    pageTitle?: string | null;
+    events?: CalendarEventRow[];
+    weekStart?: 0 | 1;
   }
-  let { templateId, slots, onSlotClick, onSwapPhoto, onAdjustCrop, editingSlotIndex = null, slotGapPx = 2, pagePaddingPx = 0 }: Props = $props();
+  let { templateId, slots, onSlotClick, onSwapPhoto, onAdjustCrop, editingSlotIndex = null, slotGapPx = 2, pagePaddingPx = 0, pageTitle = null, events = [], weekStart = 1 }: Props = $props();
 
   let tpl = $derived<Template>(getTemplate(templateId));
   let aspectRatio = $derived(tpl.aspect === 'square' ? '1 / 1' : '4 / 3');
@@ -133,4 +142,30 @@
       </div>
     </div>
   {/each}
+
+  {#if tpl.calendarGrid}
+    {@const ym = parseYearMonth(pageTitle)}
+    {#if ym}
+      <div
+        class="absolute"
+        style="
+          left: calc({pagePaddingPx}px + {tpl.calendarGrid.x} * (100% - {2 * pagePaddingPx}px));
+          top: calc({pagePaddingPx}px + {tpl.calendarGrid.y} * (100% - {2 * pagePaddingPx}px));
+          width: calc({tpl.calendarGrid.w} * (100% - {2 * pagePaddingPx}px));
+          height: calc({tpl.calendarGrid.h} * (100% - {2 * pagePaddingPx}px));
+          padding: {slotGapPx / 2}px;
+        "
+      >
+        <div class="w-full h-full" style="background: white; color: black; padding: 4px; font-size: 1.2em;">
+          <CalendarGrid
+            year={ym.year}
+            month={ym.month}
+            {weekStart}
+            {events}
+            showHeading={false}
+          />
+        </div>
+      </div>
+    {/if}
+  {/if}
 </div>
