@@ -23,6 +23,49 @@
   --color-muted: #737373;
 }
 
+/* ---------- design tokens ---------- */
+
+:root {
+  /* spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+
+  /* font sizes */
+  --text-xs: 0.7rem;
+  --text-sm: 0.8rem;
+  --text-base: 0.9rem;
+  --text-lg: 1.1rem;
+
+  /* radius */
+  --radius-sm: 3px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+
+  /* floating toolbar tokens — always dark-on-light regardless of theme so
+     it stays readable over photos and on light/dark page backgrounds */
+  --toolbar-bg: rgba(20, 20, 22, 0.92);
+  --toolbar-fg: #fafafa;
+  --toolbar-fg-muted: #c4c4c8;
+  --toolbar-border: rgba(255, 255, 255, 0.35);
+  --toolbar-active: rgba(255, 255, 255, 0.22);
+
+  /* form fields inside toolbars: explicit light background so dark-mode
+     WKWebView doesn't default them to dark fills with invisible text */
+  --toolbar-input-bg: #ffffff;
+  --toolbar-input-fg: #171717;
+  --toolbar-input-border: #999999;
+
+  /* z-index scale */
+  --z-page: 1;
+  --z-overlay: 3;
+  --z-editor: 5;
+  --z-toolbar: 7;
+  --z-modal: 50;
+}
+
 html, body {
   background: var(--color-bg);
   color: var(--color-fg);
@@ -39,13 +82,12 @@ html, body {
 .surface-card {
   background: var(--color-surface);
   border: 1px solid var(--color-line);
-  border-radius: 0.5rem;
-  padding: 1rem;
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
 }
 
 /* Tailwind v4 preflight resets <button> cursor to default. Restore the
-   pointer cursor globally for any non-disabled button so every clickable
-   button feels consistent. */
+   pointer cursor globally for any non-disabled button. */
 button:not(:disabled) {
   cursor: pointer;
 }
@@ -54,7 +96,7 @@ button:not(:disabled) {
   background: var(--color-fg);
   color: var(--color-bg);
   padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
+  border-radius: var(--radius-md);
   font-weight: 500;
   width: 100%;
 }
@@ -64,7 +106,7 @@ button:not(:disabled) {
   color: var(--color-fg);
   border: 1px solid var(--color-line);
   padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
+  border-radius: var(--radius-md);
 }
 
 .btn-ghost {
@@ -77,7 +119,113 @@ button:not(:disabled) {
   background: var(--color-surface);
   border: 1px solid var(--color-line);
   color: var(--color-fg);
-  border-radius: 0.375rem;
+  border-radius: var(--radius-md);
   padding: 0.5rem 0.75rem;
   width: 100%;
 }
+
+/* ---------- toolbar primitives ---------- */
+/* Used by the in-place editors (slot, text) and the hover-icon cluster. */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  background: var(--toolbar-bg);
+  color: var(--toolbar-fg);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+
+.toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.toolbar-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.toolbar-label {
+  color: var(--toolbar-fg-muted);
+  font-size: var(--text-xs);
+}
+
+/* Form fields embedded in a toolbar — explicit light-on-light so they
+   stay readable when macOS / Tauri WKWebView applies dark-mode form
+   chrome by default. */
+.toolbar-field {
+  background: var(--toolbar-input-bg);
+  color: var(--toolbar-input-fg);
+  border: 1px solid var(--toolbar-input-border);
+  border-radius: var(--radius-sm);
+  padding: 2px 4px;
+  font: inherit;
+  font-size: var(--text-xs);
+}
+
+.toolbar-field-color {
+  width: 28px;
+  height: 24px;
+  border: none;
+  padding: 0;
+  background: transparent;
+  border-radius: var(--radius-sm);
+}
+
+.toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  background: transparent;
+  color: var(--toolbar-fg);
+  border: 1px solid var(--toolbar-border);
+  border-radius: var(--radius-sm);
+  padding: 2px var(--space-2);
+  font-size: var(--text-xs);
+  line-height: 1;
+}
+.toolbar-btn:hover { background: var(--toolbar-active); }
+.toolbar-btn[aria-pressed="true"],
+.toolbar-btn.active { background: var(--toolbar-active); }
+
+.toolbar-btn-primary {
+  background: var(--toolbar-fg);
+  color: #171717;
+  border: none;
+}
+.toolbar-btn-primary:hover { background: #ffffff; }
+
+.toolbar-btn-danger {
+  border-color: #ff7d7d;
+  color: #ff9b9b;
+}
+.toolbar-btn-danger:hover { background: rgba(255, 100, 100, 0.18); }
+
+.toolbar-icon-btn {
+  background: transparent;
+  color: var(--toolbar-fg);
+  border: none;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  line-height: 0;
+}
+.toolbar-icon-btn:hover { background: var(--toolbar-active); }
+
+/* Hover-action icons on photo slots (swap/adjust/remove). Same dark pill
+   as the toolbar but sized smaller for stamping over a photo. */
+.slot-action-btn {
+  background: rgba(0, 0, 0, 0.55);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  line-height: 0;
+}
+.slot-action-btn:hover { background: rgba(0, 0, 0, 0.8); }
