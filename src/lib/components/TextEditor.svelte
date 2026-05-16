@@ -226,36 +226,46 @@
   onpointercancel={onPointerUp}
   role="presentation"
 >
-  <!-- Drag bar: the dedicated grab area. Clicking inside the text content
+  <!-- Drag bar: the dedicated grab area, sits inside the top edge of the
+       box like a window title bar. Clicking inside the text content
        focuses for editing; clicking this bar starts a position drag. -->
   <div
     style="
       position: absolute;
-      top: -16px;
+      top: 0;
       left: 0;
-      height: 14px;
+      right: 0;
+      height: 16px;
       padding: 0 6px;
       display: flex;
       align-items: center;
       gap: 4px;
       font-size: 10px;
-      background: rgba(0,0,0,0.7);
+      background: rgba(0,0,0,0.75);
       color: white;
-      border-radius: 3px 3px 0 0;
       cursor: {dragging === 'move' ? 'grabbing' : 'grab'};
       user-select: none;
       z-index: 4;
     "
     title="Drag to move (hold Shift to bypass snap)"
-  >⠿ drag</div>
+  >
+    <span>⠿</span>
+    <span style="opacity: 0.8;">drag to move</span>
+  </div>
 
   <div
     data-text-content
     bind:this={editorEl}
     contenteditable="true"
     oninput={onInput}
-    class="w-full h-full"
-    style="{cssForStyle(style)}; outline: none; overflow: hidden; cursor: text;"
+    style="
+      position: absolute;
+      top: 16px; left: 0; right: 0; bottom: 0;
+      {cssForStyle(style)};
+      outline: none;
+      overflow: hidden;
+      cursor: text;
+    "
   ></div>
 
   <!-- Resize handle, bottom-right -->
