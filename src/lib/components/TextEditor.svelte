@@ -218,7 +218,6 @@
     height: calc({pos.h} * (100% - {2 * pagePaddingPx}px));
     z-index: 5;
     outline: 1px dashed var(--color-fg);
-    cursor: {dragging === 'move' ? 'grabbing' : 'grab'};
     touch-action: none;
   "
   onpointerdown={onPointerDownMove}
@@ -227,6 +226,29 @@
   onpointercancel={onPointerUp}
   role="presentation"
 >
+  <!-- Drag bar: the dedicated grab area. Clicking inside the text content
+       focuses for editing; clicking this bar starts a position drag. -->
+  <div
+    style="
+      position: absolute;
+      top: -16px;
+      left: 0;
+      height: 14px;
+      padding: 0 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      border-radius: 3px 3px 0 0;
+      cursor: {dragging === 'move' ? 'grabbing' : 'grab'};
+      user-select: none;
+      z-index: 4;
+    "
+    title="Drag to move (hold Shift to bypass snap)"
+  >⠿ drag</div>
+
   <div
     data-text-content
     bind:this={editorEl}
