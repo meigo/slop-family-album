@@ -11,8 +11,14 @@
     text: PageTextRow;
     pagePaddingPx: number;
     onClose: () => void;
+    /** Vertical lines (page-relative 0..1) the text edges/center can snap to. */
+    snapTargetsX?: number[];
+    /** Horizontal lines (page-relative 0..1) the text edges/center can snap to. */
+    snapTargetsY?: number[];
   }
-  let { text, pagePaddingPx, onClose }: Props = $props();
+  let { text, pagePaddingPx, onClose, snapTargetsX = [0, 0.5, 1], snapTargetsY = [0, 0.5, 1] }: Props = $props();
+
+  const SNAP_THRESHOLD = 0.012; // fractional — ~7px on a 600px-wide page
 
   // Intentionally snapshot the prop's initial values into local $state — this
   // component edits a local copy and only writes back on save(). The
@@ -32,6 +38,26 @@
   });
 
   function clamp01(v: number) { return Math.max(0, Math.min(1, v)); }
+
+  // Active snap targets — null = no snap active. Used to render guide lines.
+  let activeSnapX = $state<number | null>(null);
+  let activeSnapY = $state<number | null>(null);
+
+  /** Find the closest snap target to any of the given candidate values.
+   *  Returns the target value and the delta (target - winning candidate),
+   *  or null if no candidate is within threshold. */
+  function nearestSnap(targets: number[], candidates: number[]): { target: number; delta: number } | null {
+    let best: { target: number; delta: number } | null = null;
+    for (const t of targets) {
+      for (const c of candidates) {
+        const d = t - c;
+        if (Math.abs(d) < SNAP_THRESHOLD && (best === null || Math.abs(d) < Math.abs(best.delta))) {
+          best = { target: t, delta: d };
+        }
+      }
+    }
+    return best;
+  }
 
   function onPointerDownMove(e: PointerEvent) {
     const tgt = e.target as HTMLElement;
@@ -57,25 +83,49 @@
     if (!dragging || !dragStart) return;
     const dx = (e.clientX - dragStart.mouseX) / dragStart.parentRect.width;
     const dy = (e.clientY - dragStart.mouseY) / dragStart.parentRect.height;
+
     if (dragging === 'move') {
-      pos = {
-        x: clamp01(dragStart.pos.x + dx),
-        y: clamp01(dragStart.pos.y + dy),
-        w: pos.w,
-        h: pos.h,
-      };
+      let nx = clamp01(dragStart.pos.x + dx);
+      let ny = clamp01(dragStart.pos.y + dy);
+
+      if (e.shiftKey) {
+        // Bypass snap entirely.
+        activeSnapX = null;
+        activeSnapY = null;
+      } else {
+        // Snap candidates for X: text left, center, right.
+        const sx = nearestSnap(snapTargetsX, [nx, nx + pos.w / 2, nx + pos.w]);
+        if (sx) { nx = clamp01(nx + sx.delta); activeSnapX = sx.target; } else { activeSnapX = null; }
+        // Snap candidates for Y: text top, center, bottom.
+        const sy = nearestSnap(snapTargetsY, [ny, ny + pos.h / 2, ny + pos.h]);
+        if (sy) { ny = clamp01(ny + sy.delta); activeSnapY = sy.target; } else { activeSnapY = null; }
+      }
+
+      pos = { x: nx, y: ny, w: pos.w, h: pos.h };
     } else {
-      pos = {
-        x: pos.x, y: pos.y,
-        w: clamp01(Math.max(0.05, dragStart.pos.w + dx)),
-        h: clamp01(Math.max(0.05, dragStart.pos.h + dy)),
-      };
+      // Resize from bottom-right corner: only right and bottom edges move.
+      let nw = clamp01(Math.max(0.05, dragStart.pos.w + dx));
+      let nh = clamp01(Math.max(0.05, dragStart.pos.h + dy));
+
+      if (e.shiftKey) {
+        activeSnapX = null;
+        activeSnapY = null;
+      } else {
+        const sx = nearestSnap(snapTargetsX, [pos.x + nw]);
+        if (sx) { nw = clamp01(Math.max(0.05, nw + sx.delta)); activeSnapX = sx.target; } else { activeSnapX = null; }
+        const sy = nearestSnap(snapTargetsY, [pos.y + nh]);
+        if (sy) { nh = clamp01(Math.max(0.05, nh + sy.delta)); activeSnapY = sy.target; } else { activeSnapY = null; }
+      }
+
+      pos = { x: pos.x, y: pos.y, w: nw, h: nh };
     }
   }
 
   function onPointerUp(e: PointerEvent) {
     dragging = null;
     dragStart = null;
+    activeSnapX = null;
+    activeSnapY = null;
     try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {
       // ignore: pointer may already be released
     }
@@ -130,6 +180,34 @@
 </script>
 
 <svelte:window onkeydown={(e) => { if (e.key === 'Escape') onClose(); }} />
+
+<!-- Snap guide lines, positioned relative to the parent (the page wrapper).
+     Rendered as a sibling of the editor box so the lines span the full page,
+     not just the editor's bounds. -->
+{#if activeSnapX !== null}
+  <div
+    style="
+      position: absolute;
+      left: calc({pagePaddingPx}px + {activeSnapX} * (100% - {2 * pagePaddingPx}px));
+      top: 0; bottom: 0; width: 1px;
+      background: #00bcd4;
+      pointer-events: none;
+      z-index: 8;
+    "
+  ></div>
+{/if}
+{#if activeSnapY !== null}
+  <div
+    style="
+      position: absolute;
+      top: calc({pagePaddingPx}px + {activeSnapY} * (100% - {2 * pagePaddingPx}px));
+      left: 0; right: 0; height: 1px;
+      background: #00bcd4;
+      pointer-events: none;
+      z-index: 8;
+    "
+  ></div>
+{/if}
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
