@@ -406,6 +406,17 @@ export async function updateSlotPhoto(pageId: number, slotIndex: number, photoId
      ON CONFLICT (page_id, slot_index) DO UPDATE SET photo_id = excluded.photo_id`,
     [pageId, slotIndex, photoId]
   );
+  await bumpSelectionFromPage(pageId);
+}
+
+// Internal: bump selection.updated_at for the selection that owns this page.
+async function bumpSelectionFromPage(pageId: number): Promise<void> {
+  const d = await db();
+  await d.execute(
+    `UPDATE selection SET updated_at = ?
+     WHERE id = (SELECT selection_id FROM page WHERE id = ?)`,
+    [Date.now(), pageId]
+  );
 }
 
 export async function listPagesForSelection(selectionId: number): Promise<PageRow[]> {
@@ -537,6 +548,7 @@ export async function reorderPage(pageId: number, direction: 'up' | 'down'): Pro
   await d.execute('UPDATE page SET index_in_book = -1 WHERE id = ?', [page.id]);
   await d.execute('UPDATE page SET index_in_book = ? WHERE id = ?', [page.index_in_book, others[0].id]);
   await d.execute('UPDATE page SET index_in_book = ? WHERE id = ?', [otherIndex, page.id]);
+  await d.execute('UPDATE selection SET updated_at = ? WHERE id = ?', [Date.now(), page.selection_id]);
 }
 
 /**
@@ -554,6 +566,7 @@ export async function reorderPage(pageId: number, direction: 'up' | 'down'): Pro
 export async function updatePageTemplate(pageId: number, newTemplateId: string, _newSlotCount: number): Promise<void> {
   const d = await db();
   await d.execute('UPDATE page SET template_id = ? WHERE id = ?', [newTemplateId, pageId]);
+  await bumpSelectionFromPage(pageId);
 }
 
 /**
@@ -573,4 +586,21 @@ export async function deletePage(pageId: number): Promise<void> {
     'UPDATE page SET index_in_book = index_in_book - 1 WHERE selection_id = ? AND index_in_book > ?',
     [selection_id, index_in_book]
   );
+  await d.execute('UPDATE selection SET updated_at = ? WHERE id = ?', [Date.now(), selection_id]);
+}
+
+export async function countPagesForSelection(selectionId: number): Promise<number> {
+  const d = await db();
+  const rows = await d.select<{ n: number }[]>(
+    'SELECT COUNT(*) as n FROM page WHERE selection_id = ?', [selectionId]
+  );
+  return rows[0]?.n ?? 0;
+}
+
+export async function getMaxIndexedAt(projectId: number): Promise<number | null> {
+  const d = await db();
+  const rows = await d.select<{ max_indexed: number | null }[]>(
+    'SELECT MAX(indexed_at) as max_indexed FROM photo WHERE project_id = ?', [projectId]
+  );
+  return rows[0]?.max_indexed ?? null;
 }

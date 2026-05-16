@@ -111,6 +111,7 @@ export interface SelectionRow {
   kind: string;
   generated_at: number;
   is_current: number;
+  updated_at: number | null;
 }
 
 export interface SelectedPhotoRow {

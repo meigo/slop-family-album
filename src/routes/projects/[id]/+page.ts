@@ -1,4 +1,4 @@
-import { getProject, countPhotos, getCurrentSelection } from '$lib/db';
+import { getProject, countPhotos, getCurrentSelection, countPagesForSelection, getMaxIndexedAt } from '$lib/db';
 import { error } from '@sveltejs/kit';
 
 export const ssr = false;
@@ -11,5 +11,13 @@ export async function load({ params }) {
   const count = await countPhotos(id);
   const albumSelection = await getCurrentSelection(id, 'album');
   const calendarSelection = await getCurrentSelection(id, 'calendar');
-  return { project, count, albumSelection, calendarSelection };
+  const albumPageCount = albumSelection ? await countPagesForSelection(albumSelection.id) : 0;
+  const calendarPageCount = calendarSelection ? await countPagesForSelection(calendarSelection.id) : 0;
+  const lastIndexedAt = await getMaxIndexedAt(id);
+  return {
+    project, count,
+    albumSelection, calendarSelection,
+    albumPageCount, calendarPageCount,
+    lastIndexedAt,
+  };
 }

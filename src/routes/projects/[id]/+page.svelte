@@ -10,6 +10,18 @@
 
   let { data } = $props();
 
+  function formatRelativeTime(epochMs: number | null): string {
+    if (epochMs === null) return 'never';
+    const now = Date.now();
+    const diff = now - epochMs;
+    if (diff < 60_000) return 'just now';
+    if (diff < 3_600_000) return `${Math.floor(diff / 60_000)} min ago`;
+    if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)}h ago`;
+    if (diff < 604_800_000) return `${Math.floor(diff / 86_400_000)}d ago`;
+    // Older than a week: show actual date
+    return new Date(epochMs).toLocaleDateString();
+  }
+
   // Mirror the module-level progress store into a local $state so the
   // template re-renders on each update. The store survives navigation, so
   // returning to this page mid-index resumes the live counter.
@@ -68,7 +80,12 @@
     <p class="text-sm mt-1" style="color: var(--color-muted)">
       Year: {data.project.album_year} → calendar {data.project.calendar_year}
     </p>
-    <p class="mt-3">Indexed: <strong>{data.count}</strong> photos</p>
+    <p class="mt-3">
+      Indexed: <strong>{data.count}</strong> photos
+      {#if data.lastIndexedAt !== null}
+        <span style="color: var(--color-muted)" class="text-sm"> · last index {formatRelativeTime(data.lastIndexedAt)}</span>
+      {/if}
+    </p>
     <div class="flex gap-2 mt-3">
       <button type="button" class="btn-primary" onclick={runIndex} disabled={mine && (pStateLocal.phase === 'walking' || pStateLocal.phase === 'indexing')}>
         {(!mine || pStateLocal.phase === 'idle' || pStateLocal.phase === 'done') ? 'Index now' : 'Indexing…'}
@@ -84,6 +101,16 @@
       </button>
       <a class="btn-secondary" href={`/projects/${data.project.id}/library`}>Open library</a>
     </div>
+    {#if data.albumSelection}
+      <p class="mt-3 text-sm" style="color: var(--color-muted)">
+        Album: {data.albumPageCount} {data.albumPageCount === 1 ? 'page' : 'pages'} · last edited {formatRelativeTime(data.albumSelection.updated_at ?? data.albumSelection.generated_at)}
+      </p>
+    {/if}
+    {#if data.calendarSelection}
+      <p class="text-sm" style="color: var(--color-muted)">
+        Calendar: {data.calendarPageCount} {data.calendarPageCount === 1 ? 'page' : 'pages'} · last edited {formatRelativeTime(data.calendarSelection.updated_at ?? data.calendarSelection.generated_at)}
+      </p>
+    {/if}
     <div class="flex flex-wrap gap-2 mt-3">
       {#if data.albumSelection}
         <a class="btn-primary" href={`/projects/${data.project.id}/album/review`}>Open album</a>
