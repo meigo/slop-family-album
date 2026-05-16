@@ -4,6 +4,7 @@ import {
   listPagesForSelection,
   listSlotsForPages,
   enrichSlotsWithLayoutContext,
+  listEvents,
 } from '$lib/db';
 import { error } from '@sveltejs/kit';
 
@@ -15,6 +16,7 @@ export async function load({ params }) {
   const project = await getProject(id);
   if (!project) throw error(404, 'Project not found');
   const selection = await getCurrentSelection(id, 'calendar');
+  const events = await listEvents(id);
   const pages = selection ? await listPagesForSelection(selection.id) : [];
   const slots = pages.length > 0 ? await listSlotsForPages(pages.map((p) => p.id)) : [];
   const enriched = await enrichSlotsWithLayoutContext(slots);
@@ -25,5 +27,5 @@ export async function load({ params }) {
     arr.push(s);
     slotsByPage.set(s.page_id, arr);
   }
-  return { project, selection, pages, slotsByPage };
+  return { project, selection, pages, slotsByPage, events };
 }

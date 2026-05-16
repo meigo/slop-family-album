@@ -6,7 +6,7 @@
   import SlotEditor from '$lib/components/SlotEditor.svelte';
   import { getTemplate } from '$lib/layout/templates';
   import { invalidateAll } from '$app/navigation';
-  import { updateSlotPhoto, insertBlankPage, updateProjectSlotGap, updateProjectPagePadding } from '$lib/db';
+  import { updateSlotPhoto, insertBlankPage, updateProjectSlotGap, updateProjectPagePadding, updateProjectWeekStart } from '$lib/db';
 
   let { data } = $props();
 
@@ -14,6 +14,13 @@
   let slotGapPx = $state(data.project.slot_gap_px);
   // svelte-ignore state_referenced_locally
   let pagePaddingPx = $state(data.project.page_padding_px);
+  // svelte-ignore state_referenced_locally
+  let weekStart = $state<0 | 1>(data.project.week_start === 0 ? 0 : 1);
+
+  async function setWeekStart(v: 0 | 1) {
+    weekStart = v;
+    await updateProjectWeekStart(data.project.id, v);
+  }
 
   let gapSavingTimer: ReturnType<typeof setTimeout> | null = null;
   function onGapChange(e: Event) {
@@ -112,6 +119,21 @@
       <input type="range" min="0" max="60" step="1" value={pagePaddingPx} oninput={onPadChange} style="width: 160px;" />
       <span style="font-variant-numeric: tabular-nums; min-width: 3ch;">{pagePaddingPx}px</span>
     </label>
+    <label class="text-sm mt-1 flex items-center gap-2" style="color: var(--color-muted)">
+      week starts:
+      <button
+        type="button"
+        class={weekStart === 1 ? 'btn-primary' : 'btn-ghost'}
+        style="font-size: 0.75rem; padding: 0.125rem 0.5rem;"
+        onclick={() => setWeekStart(1)}
+      >Mon</button>
+      <button
+        type="button"
+        class={weekStart === 0 ? 'btn-primary' : 'btn-ghost'}
+        style="font-size: 0.75rem; padding: 0.125rem 0.5rem;"
+        onclick={() => setWeekStart(0)}
+      >Sun</button>
+    </label>
 
     <div class="grid grid-cols-2 gap-4 mt-4">
       <button
@@ -139,6 +161,9 @@
               editingSlotIndex={editorOpen?.pageId === page.id ? editorOpen!.slotIndex : null}
               {slotGapPx}
               {pagePaddingPx}
+              pageTitle={page.title}
+              events={data.events}
+              {weekStart}
             />
             {#if editorOpen && editorOpen.pageId === page.id}
               {@const editorSlots = data.slotsByPage.get(page.id) ?? []}
