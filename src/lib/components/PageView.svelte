@@ -5,6 +5,7 @@
   interface Slot {
     slot_index: number;
     photo_id: number | null;
+    path: string | null;
     thumb_path: string | null;
   }
 
@@ -44,12 +45,16 @@
       onclick={() => onSlotClick?.(i)}
     >
       <div class="w-full h-full overflow-hidden" style="background: var(--color-line);">
-        {#if slot?.thumb_path}
+        {#if slot?.path}
+          <!-- Use the ORIGINAL photo path (not thumb_path) so review-page
+               rendering at ~700-1000px wide stays sharp. loading="lazy"
+               keeps off-screen pages from decoding until needed. -->
           <img
-            src={convertFileSrc(slot.thumb_path)}
+            src={convertFileSrc(slot.path)}
             alt=""
             class="w-full h-full object-cover"
             draggable="false"
+            loading="lazy"
           />
         {:else}
           <div class="w-full h-full flex items-center justify-center" style="color: var(--color-muted)">
