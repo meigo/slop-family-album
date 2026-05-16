@@ -26,6 +26,11 @@
     }
   }
 
+  function onDragEnter(e: DragEvent, idx: number) {
+    e.preventDefault();
+    overIdx = idx;
+  }
+
   function onDragOver(e: DragEvent, idx: number) {
     e.preventDefault();
     if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
@@ -34,6 +39,7 @@
 
   async function onDrop(e: DragEvent, dropIdx: number) {
     e.preventDefault();
+    e.stopPropagation();
     overIdx = null;
     if (draggingId === null) return;
     const fromIdx = localOrder.findIndex((p) => p.id === draggingId);
@@ -81,31 +87,39 @@
 
     <div class="grid grid-cols-3 gap-3 mt-4">
       {#each localOrder as page, idx (page.id)}
-        <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-        <div
-          class="relative"
-          style="
-            cursor: grab;
-            opacity: {draggingId === page.id ? 0.4 : 1};
-            outline: {overIdx === idx ? '2px dashed var(--color-fg)' : 'none'};
-            outline-offset: 4px;
-          "
-          draggable="true"
-          ondragstart={(e) => onDragStart(e, page.id)}
-          ondragover={(e) => onDragOver(e, idx)}
-          ondrop={(e) => onDrop(e, idx)}
-          ondragend={onDragEnd}
-          onclick={openInReview}
-          title={monthLabel(page.title) + ' · drag to move, click to open in review'}
-        >
-          <PageThumb
-            templateId={page.template_id}
-            slots={data.slotsByPage.get(page.id) ?? []}
-            width={300}
-          />
-          <p class="text-xs text-center mt-1" style="color: var(--color-muted)">
+        <div>
+          <!-- svelte-ignore a11y_no_static_element_interactions -->
+          <div
+            class="relative"
+            style="
+              cursor: grab;
+              opacity: {draggingId === page.id ? 0.4 : 1};
+              outline: {overIdx === idx ? '2px dashed var(--color-fg)' : 'none'};
+              outline-offset: 4px;
+            "
+            draggable="true"
+            ondragstart={(e) => onDragStart(e, page.id)}
+            ondragenter={(e) => onDragEnter(e, idx)}
+            ondragover={(e) => onDragOver(e, idx)}
+            ondrop={(e) => onDrop(e, idx)}
+            ondragend={onDragEnd}
+            title={monthLabel(page.title) + ' · drag to move'}
+          >
+            <PageThumb
+              templateId={page.template_id}
+              slots={data.slotsByPage.get(page.id) ?? []}
+              width={300}
+            />
+          </div>
+          <button
+            type="button"
+            class="btn-ghost text-xs text-center w-full"
+            style="margin-top: 0.25rem; padding: 0.125rem;"
+            onclick={openInReview}
+            title="Open in full review"
+          >
             {monthLabel(page.title)}
-          </p>
+          </button>
         </div>
       {/each}
     </div>
