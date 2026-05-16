@@ -28,22 +28,10 @@
   }
 
   let pickerOpen = $state<null | { pageId: number; slotIndex: number; currentPhotoId: number | null }>(null);
-  let editorOpen = $state<null | {
-    pageId: number;
-    slotIndex: number;
-    photoPath: string;
-    photoWidth: number;
-    photoHeight: number;
-    initialTransformJson: string | null;
-    slotLayoutW: number;
-    slotLayoutH: number;
-    slotLayoutX: number;
-    slotLayoutY: number;
-    faces: Array<{ bbox_x: number; bbox_y: number; bbox_w: number; bbox_h: number }>;
-    topTag: string | null;
-  }>(null);
+  let editorOpen = $state<null | { pageId: number; slotIndex: number }>(null);
 
   function openPicker(pageId: number, slotIndex: number) {
+    editorOpen = null;
     const slots = data.slotsByPage.get(pageId) ?? [];
     const slot = slots.find((s) => s.slot_index === slotIndex);
     pickerOpen = {
@@ -54,29 +42,8 @@
   }
 
   function openEditor(pageId: number, slotIndex: number) {
-    const page = data.pages.find((p) => p.id === pageId);
-    if (!page) return;
-    const slots = data.slotsByPage.get(pageId) ?? [];
-    const slot = slots.find((s) => s.slot_index === slotIndex);
-    if (!slot || !slot.path || slot.photo_width === null || slot.photo_height === null) return;
-    const tpl = getTemplate(page.template_id);
-    const slotLayout = tpl.slots[slotIndex];
-    if (!slotLayout) return;
-    // close picker if it was open
     pickerOpen = null;
-    editorOpen = {
-      pageId, slotIndex,
-      photoPath: slot.path,
-      photoWidth: slot.photo_width,
-      photoHeight: slot.photo_height,
-      initialTransformJson: slot.transform_json,
-      slotLayoutX: slotLayout.x,
-      slotLayoutY: slotLayout.y,
-      slotLayoutW: slotLayout.w,
-      slotLayoutH: slotLayout.h,
-      faces: slot.faces,
-      topTag: slot.top_tag,
-    };
+    editorOpen = { pageId, slotIndex };
   }
 
   async function pickPhoto(photoId: number) {
@@ -131,11 +98,47 @@
               isLast={idx === data.pages.length - 1}
             />
           </div>
-          <PageView
-            templateId={page.template_id}
-            slots={data.slotsByPage.get(page.id) ?? []}
-            onSlotClick={(slotIndex) => openPicker(page.id, slotIndex)}
-          />
+          <div class="relative">
+            <PageView
+              templateId={page.template_id}
+              slots={data.slotsByPage.get(page.id) ?? []}
+              onSwapPhoto={(i) => openPicker(page.id, i)}
+              onAdjustCrop={(i) => openEditor(page.id, i)}
+              editingSlotIndex={editorOpen?.pageId === page.id ? editorOpen!.slotIndex : null}
+            />
+            {#if editorOpen && editorOpen.pageId === page.id}
+              {@const editorSlots = data.slotsByPage.get(page.id) ?? []}
+              {@const editorSlot = editorSlots.find((s) => s.slot_index === editorOpen!.slotIndex)}
+              {@const editorTpl = getTemplate(page.template_id)}
+              {@const editorLayout = editorTpl.slots[editorOpen!.slotIndex]}
+              {#if editorSlot?.path && editorSlot.photo_width !== null && editorSlot.photo_height !== null && editorLayout}
+                <div
+                  class="absolute"
+                  style="
+                    left: {editorLayout.x * 100}%;
+                    top: {editorLayout.y * 100}%;
+                    width: {editorLayout.w * 100}%;
+                    height: {editorLayout.h * 100}%;
+                    padding: 2px;
+                    z-index: 4;
+                  "
+                >
+                  <SlotEditor
+                    pageId={page.id}
+                    slotIndex={editorOpen.slotIndex}
+                    photoPath={editorSlot.path}
+                    photoWidth={editorSlot.photo_width}
+                    photoHeight={editorSlot.photo_height}
+                    initialTransformJson={editorSlot.transform_json}
+                    slotLayout={editorLayout}
+                    faces={editorSlot.faces}
+                    topTag={editorSlot.top_tag}
+                    onClose={() => editorOpen = null}
+                  />
+                </div>
+              {/if}
+            {/if}
+          </div>
         </section>
         <button
           type="button"
@@ -159,22 +162,6 @@
       onPick={pickPhoto}
       onClose={() => pickerOpen = null}
       onEdit={() => pickerOpen && openEditor(pickerOpen.pageId, pickerOpen.slotIndex)}
-    />
-  {/if}
-
-  {#if editorOpen}
-    <SlotEditor
-      pageId={editorOpen.pageId}
-      slotIndex={editorOpen.slotIndex}
-      photoPath={editorOpen.photoPath}
-      photoWidth={editorOpen.photoWidth}
-      photoHeight={editorOpen.photoHeight}
-      initialTransformJson={editorOpen.initialTransformJson}
-      slotLayout={{ x: editorOpen.slotLayoutX, y: editorOpen.slotLayoutY, w: editorOpen.slotLayoutW, h: editorOpen.slotLayoutH }}
-      pageAspect="square"
-      faces={editorOpen.faces}
-      topTag={editorOpen.topTag}
-      onClose={() => editorOpen = null}
     />
   {/if}
 </div>
