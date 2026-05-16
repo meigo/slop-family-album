@@ -604,3 +604,28 @@ export async function getMaxIndexedAt(projectId: number): Promise<number | null>
   );
   return rows[0]?.max_indexed ?? null;
 }
+
+/**
+ * Replace the index_in_book of every page in a selection in one
+ * batch. Caller provides page IDs in the desired final order.
+ *
+ * Uses a sentinel pass (negative indices first) to avoid colliding
+ * with anything else in case a future unique constraint exists on
+ * (selection_id, index_in_book).
+ */
+export async function setPageOrder(selectionId: number, orderedPageIds: number[]): Promise<void> {
+  const d = await db();
+  for (let i = 0; i < orderedPageIds.length; i++) {
+    await d.execute(
+      'UPDATE page SET index_in_book = ? WHERE id = ? AND selection_id = ?',
+      [-(i + 1), orderedPageIds[i], selectionId]
+    );
+  }
+  for (let i = 0; i < orderedPageIds.length; i++) {
+    await d.execute(
+      'UPDATE page SET index_in_book = ? WHERE id = ? AND selection_id = ?',
+      [i, orderedPageIds[i], selectionId]
+    );
+  }
+  await d.execute('UPDATE selection SET updated_at = ? WHERE id = ?', [Date.now(), selectionId]);
+}
