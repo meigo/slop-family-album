@@ -7,7 +7,7 @@
   import TextEditor from '$lib/components/TextEditor.svelte';
   import { getTemplate } from '$lib/layout/templates';
   import { invalidateAll } from '$app/navigation';
-  import { updateSlotPhoto, insertBlankPage, updateProjectSlotGap, updateProjectPagePadding, updateProjectWeekStart, addPageText } from '$lib/db';
+  import { updateSlotPhoto, clearSlotPhoto, insertBlankPage, updateProjectSlotGap, updateProjectPagePadding, updateProjectWeekStart, addPageText } from '$lib/db';
   import { DEFAULT_TEXT_STYLE, serializeStyle } from '$lib/text/style';
 
   let { data } = $props();
@@ -90,6 +90,14 @@
     if (!pickerOpen) return;
     await updateSlotPhoto(pickerOpen.pageId, pickerOpen.slotIndex, photoId);
     pickerOpen = null;
+    await invalidateAll();
+  }
+
+  async function removePhoto(pageId: number, slotIndex: number) {
+    if (!confirm('Remove this photo from the slot?')) return;
+    await clearSlotPhoto(pageId, slotIndex);
+    pickerOpen = null;
+    editorOpen = null;
     await invalidateAll();
   }
 
@@ -185,6 +193,7 @@
               onSlotClick={(i) => openPicker(page.id, i, page.title ?? '')}
               onSwapPhoto={(i) => openPicker(page.id, i, page.title ?? '')}
               onAdjustCrop={(i) => openEditor(page.id, i)}
+              onRemovePhoto={(i) => removePhoto(page.id, i)}
               editingSlotIndex={editorOpen?.pageId === page.id ? editorOpen!.slotIndex : null}
               {slotGapPx}
               {pagePaddingPx}

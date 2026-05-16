@@ -423,6 +423,18 @@ export async function updateSlotPhoto(pageId: number, slotIndex: number, photoId
   await bumpSelectionFromPage(pageId);
 }
 
+/** Clear a slot: sets photo_id to NULL and resets transform_json. Used by
+ *  the "remove photo" affordance on filled slots. Idempotent. */
+export async function clearSlotPhoto(pageId: number, slotIndex: number): Promise<void> {
+  const d = await db();
+  await d.execute(
+    `UPDATE page_slot SET photo_id = NULL, transform_json = NULL
+     WHERE page_id = ? AND slot_index = ?`,
+    [pageId, slotIndex]
+  );
+  await bumpSelectionFromPage(pageId);
+}
+
 // Internal: bump selection.updated_at for the selection that owns this page.
 async function bumpSelectionFromPage(pageId: number): Promise<void> {
   const d = await db();

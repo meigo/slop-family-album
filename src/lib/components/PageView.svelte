@@ -27,6 +27,7 @@
     onSlotClick?: (slotIndex: number) => void;
     onSwapPhoto?: (slotIndex: number) => void;
     onAdjustCrop?: (slotIndex: number) => void;
+    onRemovePhoto?: (slotIndex: number) => void;
     editingSlotIndex?: number | null;
     /** Visible gap (px) between adjacent slot images. Each slot contributes
      *  half of this as internal padding, so two adjacent slots produce
@@ -46,7 +47,7 @@
     editingTextId?: number | null;
     onEditText?: (textId: number) => void;
   }
-  let { templateId, slots, onSlotClick, onSwapPhoto, onAdjustCrop, editingSlotIndex = null, slotGapPx = 2, pagePaddingPx = 0, pageTitle = null, events = [], weekStart = 1, texts = [], editingTextId = null, onEditText }: Props = $props();
+  let { templateId, slots, onSlotClick, onSwapPhoto, onAdjustCrop, onRemovePhoto, editingSlotIndex = null, slotGapPx = 2, pagePaddingPx = 0, pageTitle = null, events = [], weekStart = 1, texts = [], editingTextId = null, onEditText }: Props = $props();
 
   let tpl = $derived<Template>(getTemplate(templateId));
   let aspectRatio = $derived(tpl.aspect === 'square' ? '1 / 1' : '4 / 3');
@@ -93,7 +94,7 @@
             src={convertFileSrc(slot.path)}
             alt=""
             class="absolute inset-0 w-full h-full object-cover"
-            style="object-position: {css.objectPosition}; transform: {css.transform}; transform-origin: {css.transformOrigin};"
+            style="object-position: {css.objectPosition}; transform: {css.transform}; transform-origin: {css.transformOrigin}; filter: {css.filter};"
             draggable="false"
             loading="lazy"
           />
@@ -115,7 +116,7 @@
             ></button>
           {/if}
 
-          {#if slot?.path && (onSwapPhoto || onAdjustCrop)}
+          {#if slot?.path && (onSwapPhoto || onAdjustCrop || onRemovePhoto)}
             <div
               class="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
               style="z-index: 2;"
@@ -136,9 +137,19 @@
                   class="rounded p-1 text-xs"
                   style="background: rgba(0,0,0,0.6); color: white; border: none; cursor: pointer;"
                   onclick={(e) => { e.stopPropagation(); onAdjustCrop?.(i); }}
-                  title="Adjust crop"
+                  title="Adjust crop / brightness"
                   aria-label={`Adjust crop in slot ${i + 1}`}
                 >✥</button>
+              {/if}
+              {#if onRemovePhoto}
+                <button
+                  type="button"
+                  class="rounded p-1 text-xs"
+                  style="background: rgba(0,0,0,0.6); color: white; border: none; cursor: pointer;"
+                  onclick={(e) => { e.stopPropagation(); onRemovePhoto?.(i); }}
+                  title="Remove photo from this slot"
+                  aria-label={`Remove photo from slot ${i + 1}`}
+                >🗑</button>
               {/if}
             </div>
           {/if}
