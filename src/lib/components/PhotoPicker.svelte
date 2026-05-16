@@ -2,6 +2,7 @@
   import { convertFileSrc } from '@tauri-apps/api/core';
   import { listCandidatesForPicker, getPhotoTakenAt, type PickerScope } from '$lib/db';
   import { onMount } from 'svelte';
+  import { X } from '@lucide/svelte';
 
   interface Props {
     projectId: number;
@@ -116,9 +117,11 @@
   onclick={handleBackdrop}
 >
   <div class="surface-card relative" style="width: 90vw; max-width: 900px; max-height: 90vh; overflow-y: auto;">
-    <div class="flex items-baseline justify-between mb-3">
+    <div class="flex items-center justify-between mb-3">
       <h3 class="text-lg font-medium">Pick a photo</h3>
-      <button type="button" class="btn-ghost" onclick={onClose}>Close (Esc)</button>
+      <button type="button" class="btn-ghost flex items-center gap-1" onclick={onClose} title="Close (Esc)" aria-label="Close picker">
+        <X size={16} /> Esc
+      </button>
     </div>
 
     <div class="flex flex-wrap items-center gap-2 mb-3 text-sm">
