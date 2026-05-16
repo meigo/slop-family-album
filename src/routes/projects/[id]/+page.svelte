@@ -34,6 +34,7 @@
   let generating = $state<null | 'album' | 'calendar'>(null);
 
   async function runGenerateAlbum() {
+    if (data.albumSelection && !confirm('Regenerate the album from scratch? Your manual page edits will be lost.')) return;
     generating = 'album';
     try {
       await generateAlbumSelection(data.project.id);
@@ -45,6 +46,7 @@
   }
 
   async function runGenerateCalendar() {
+    if (data.calendarSelection && !confirm('Regenerate the calendar from scratch? Your manual page edits will be lost.')) return;
     generating = 'calendar';
     try {
       await generateCalendarSelection(data.project.id);
@@ -82,13 +84,27 @@
       </button>
       <a class="btn-secondary" href={`/projects/${data.project.id}/library`}>Open library</a>
     </div>
-    <div class="flex gap-2 mt-3">
-      <button type="button" class="btn-primary" onclick={runGenerateAlbum} disabled={generating !== null}>
-        {generating === 'album' ? 'Generating album…' : 'Generate album'}
-      </button>
-      <button type="button" class="btn-primary" onclick={runGenerateCalendar} disabled={generating !== null}>
-        {generating === 'calendar' ? 'Generating calendar…' : 'Generate calendar'}
-      </button>
+    <div class="flex flex-wrap gap-2 mt-3">
+      {#if data.albumSelection}
+        <a class="btn-primary" href={`/projects/${data.project.id}/album/review`}>Open album</a>
+        <button type="button" class="btn-secondary" onclick={runGenerateAlbum} disabled={generating !== null} title="Discard edits and rebuild from current scoring">
+          {generating === 'album' ? 'Regenerating album…' : 'Regenerate album'}
+        </button>
+      {:else}
+        <button type="button" class="btn-primary" onclick={runGenerateAlbum} disabled={generating !== null}>
+          {generating === 'album' ? 'Generating album…' : 'Generate album'}
+        </button>
+      {/if}
+      {#if data.calendarSelection}
+        <a class="btn-primary" href={`/projects/${data.project.id}/calendar/review`}>Open calendar</a>
+        <button type="button" class="btn-secondary" onclick={runGenerateCalendar} disabled={generating !== null} title="Discard edits and rebuild from current scoring">
+          {generating === 'calendar' ? 'Regenerating calendar…' : 'Regenerate calendar'}
+        </button>
+      {:else}
+        <button type="button" class="btn-primary" onclick={runGenerateCalendar} disabled={generating !== null}>
+          {generating === 'calendar' ? 'Generating calendar…' : 'Generate calendar'}
+        </button>
+      {/if}
     </div>
     {#if mine && pStateLocal.phase === 'walking'}
       <p class="mt-3 text-sm" style="color: var(--color-muted)">Walking folder…</p>

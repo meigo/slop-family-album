@@ -1,4 +1,4 @@
-import { getProject, countPhotos } from '$lib/db';
+import { getProject, countPhotos, getCurrentSelection } from '$lib/db';
 import { error } from '@sveltejs/kit';
 
 export const ssr = false;
@@ -9,5 +9,7 @@ export async function load({ params }) {
   const project = await getProject(id);
   if (!project) throw error(404, 'Project not found');
   const count = await countPhotos(id);
-  return { project, count };
+  const albumSelection = await getCurrentSelection(id, 'album');
+  const calendarSelection = await getCurrentSelection(id, 'calendar');
+  return { project, count, albumSelection, calendarSelection };
 }
