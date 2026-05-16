@@ -6,9 +6,26 @@
   import SlotEditor from '$lib/components/SlotEditor.svelte';
   import { getTemplate } from '$lib/layout/templates';
   import { invalidateAll } from '$app/navigation';
-  import { updateSlotPhoto } from '$lib/db';
+  import { updateSlotPhoto, insertBlankPage } from '$lib/db';
 
   let { data } = $props();
+
+  let inserting = $state(false);
+
+  async function insertBlankBelow(idx: number) {
+    if (!data.selection) return;
+    inserting = true;
+    try {
+      await insertBlankPage({
+        selection_id: data.selection.id,
+        insert_at: idx + 1,
+        template_id: 'cal-month',
+      });
+      await invalidateAll();
+    } finally {
+      inserting = false;
+    }
+  }
 
   let pickerOpen = $state<null | { pageId: number; slotIndex: number; bucketKey: string; currentPhotoId: number | null }>(null);
   let editorOpen = $state<null | {
@@ -95,7 +112,17 @@
     </p>
 
     <div class="grid grid-cols-2 gap-4 mt-4">
-      {#each data.pages as page, idx}
+      <button
+        type="button"
+        class="btn-secondary self-center mb-2"
+        style="font-size: 0.75rem; padding: 0.25rem 0.5rem;"
+        onclick={() => insertBlankBelow(-1)}
+        disabled={inserting}
+        title="Insert a blank cal-month page at the start"
+      >
+        + insert blank page at start
+      </button>
+      {#each data.pages as page, idx (page.id)}
         <section>
           <h2 class="text-sm font-medium mb-1" style="color: var(--color-muted)">
             {monthLabel(page.title)}
@@ -115,6 +142,16 @@
             />
           </div>
         </section>
+        <button
+          type="button"
+          class="btn-secondary self-center"
+          style="font-size: 0.75rem; padding: 0.25rem 0.5rem;"
+          onclick={() => insertBlankBelow(idx)}
+          disabled={inserting}
+          title="Insert a blank cal-month page after page {idx + 1}"
+        >
+          + insert blank page
+        </button>
       {/each}
     </div>
   {/if}
