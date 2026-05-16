@@ -398,9 +398,13 @@ export async function insertPageSlot(s: PageSlotInsert): Promise<void> {
 
 export async function updateSlotPhoto(pageId: number, slotIndex: number, photoId: number): Promise<void> {
   const d = await db();
+  // UPSERT: if a slot row exists, update its photo_id; otherwise insert one.
+  // Lets updatePageTemplate skip pre-creating empty slot rows when growing
+  // a template — the picker can write to any (page, slot_index) pair.
   await d.execute(
-    'UPDATE page_slot SET photo_id = ? WHERE page_id = ? AND slot_index = ?',
-    [photoId, pageId, slotIndex]
+    `INSERT INTO page_slot (page_id, slot_index, photo_id) VALUES (?, ?, ?)
+     ON CONFLICT (page_id, slot_index) DO UPDATE SET photo_id = excluded.photo_id`,
+    [pageId, slotIndex, photoId]
   );
 }
 
@@ -536,24 +540,20 @@ export async function reorderPage(pageId: number, direction: 'up' | 'down'): Pro
 }
 
 /**
- * Swap the template of a page. Preserves first min(old, new) photos;
- * drops excess if shrinking; leaves new slots empty if growing.
+ * Swap the template of a page. Keeps the page's slot rows intact so
+ * photos beyond the new template's slot_count survive as "page memory":
+ * if the user shrinks (4→1) then grows back (1→4), the original
+ * photos in slots 1-3 reappear. Slot rows at indices the new template
+ * doesn't include simply aren't rendered by PageView.
+ *
+ * The `newSlotCount` param is accepted for backward compatibility but
+ * intentionally unused — slot rows aren't created or deleted here.
+ * updateSlotPhoto upserts, so empty slots the user clicks into get
+ * their row created on first write.
  */
-export async function updatePageTemplate(pageId: number, newTemplateId: string, newSlotCount: number): Promise<void> {
+export async function updatePageTemplate(pageId: number, newTemplateId: string, _newSlotCount: number): Promise<void> {
   const d = await db();
-  const oldSlots = await d.select<{ slot_index: number; photo_id: number | null }[]>(
-    'SELECT slot_index, photo_id FROM page_slot WHERE page_id = ? ORDER BY slot_index ASC',
-    [pageId]
-  );
-  await d.execute('DELETE FROM page_slot WHERE page_id = ?', [pageId]);
   await d.execute('UPDATE page SET template_id = ? WHERE id = ?', [newTemplateId, pageId]);
-  for (let i = 0; i < newSlotCount; i++) {
-    const photoId = oldSlots[i]?.photo_id ?? null;
-    await d.execute(
-      'INSERT INTO page_slot (page_id, slot_index, photo_id) VALUES (?, ?, ?)',
-      [pageId, i, photoId]
-    );
-  }
 }
 
 /**
