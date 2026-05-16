@@ -1,49 +1,63 @@
 export interface SlotTransform {
-  /** Horizontal offset, fraction of the slot width. 0 = centered.
-   *  Positive moves the photo right (revealing more of the left side
-   *  of the photo to the right of slot center). */
-  offsetX: number;
-  /** Vertical offset, fraction of the slot height. 0 = centered. */
-  offsetY: number;
-  /** Scale relative to the smallest fit (cover). 1 = `object-fit: cover`
-   *  default. >1 zooms in. <1 isn't meaningful (would show empty area). */
+  /** Object-position X in percent (0..100). 50 = centered. */
+  objectPositionX: number;
+  /** Object-position Y in percent (0..100). */
+  objectPositionY: number;
+  /** Zoom factor. 1 = exactly object-fit: cover; >1 zooms in. */
   scale: number;
 }
 
-export const IDENTITY_TRANSFORM: SlotTransform = { offsetX: 0, offsetY: 0, scale: 1 };
+export const IDENTITY_TRANSFORM: SlotTransform = { objectPositionX: 50, objectPositionY: 50, scale: 1 };
 
 export function parseTransform(json: string | null): SlotTransform | null {
   if (!json) return null;
   try {
     const parsed = JSON.parse(json);
     if (
-      !Number.isFinite(parsed.offsetX) ||
-      !Number.isFinite(parsed.offsetY) ||
+      !Number.isFinite(parsed.objectPositionX) ||
+      !Number.isFinite(parsed.objectPositionY) ||
       !Number.isFinite(parsed.scale) ||
-      parsed.scale <= 0
+      parsed.scale <= 0 ||
+      parsed.objectPositionX < 0 || parsed.objectPositionX > 100 ||
+      parsed.objectPositionY < 0 || parsed.objectPositionY > 100
     ) {
       return null;
     }
-    return { offsetX: parsed.offsetX, offsetY: parsed.offsetY, scale: parsed.scale };
+    return {
+      objectPositionX: parsed.objectPositionX,
+      objectPositionY: parsed.objectPositionY,
+      scale: parsed.scale,
+    };
   } catch {
     return null;
   }
 }
 
 export function serializeTransform(t: SlotTransform): string {
-  return JSON.stringify({ offsetX: t.offsetX, offsetY: t.offsetY, scale: t.scale });
+  return JSON.stringify({
+    objectPositionX: t.objectPositionX,
+    objectPositionY: t.objectPositionY,
+    scale: t.scale,
+  });
 }
 
-/** Returns the CSS object-position string + transform string for an
- *  <img> rendered inside its slot. Slot is `object-fit: cover` so the
- *  image fills the slot area; we then translate/scale to apply the
- *  user's adjustment. */
-export function cssForTransform(t: SlotTransform): { transform: string; transformOrigin: string } {
-  const dx = (t.offsetX * 100).toFixed(2);
-  const dy = (t.offsetY * 100).toFixed(2);
+/** Returns the CSS the renderer needs:
+ *  - objectPosition: applied to <img style="object-position: ...">
+ *  - transform: applied to <img style="transform: ..."> for zoom
+ *  - transformOrigin: matches object-position so zooming keeps the
+ *    focal point fixed.
+ */
+export function cssForTransform(t: SlotTransform): {
+  objectPosition: string;
+  transform: string;
+  transformOrigin: string;
+} {
+  const px = t.objectPositionX.toFixed(2);
+  const py = t.objectPositionY.toFixed(2);
   const s = t.scale.toFixed(4);
   return {
-    transform: `translate(${dx}%, ${dy}%) scale(${s})`,
-    transformOrigin: 'center center',
+    objectPosition: `${px}% ${py}%`,
+    transform: `scale(${s})`,
+    transformOrigin: `${px}% ${py}%`,
   };
 }
