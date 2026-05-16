@@ -2,6 +2,7 @@
   import PageHeader from '$lib/components/PageHeader.svelte';
   import PageView from '$lib/components/PageView.svelte';
   import PhotoPicker from '$lib/components/PhotoPicker.svelte';
+  import PageControls from '$lib/components/PageControls.svelte';
   import { invalidateAll } from '$app/navigation';
   import { updateSlotPhoto } from '$lib/db';
 
@@ -40,15 +41,24 @@
     </section>
   {:else}
     <p class="text-sm mt-2" style="color: var(--color-muted)">
-      {data.pages.length} pages · click any photo to swap
+      {data.pages.length} pages · click any photo to swap, use the dropdown to change layout
     </p>
 
     <div class="flex flex-col gap-6 mt-4">
       {#each data.pages as page, idx}
         <section>
-          <h2 class="text-sm font-medium mb-1" style="color: var(--color-muted)">
-            Page {idx + 1}{page.title ? ` · ${page.title}` : ''} · template {page.template_id}
-          </h2>
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <h2 class="text-sm font-medium" style="color: var(--color-muted)">
+              Page {idx + 1}{page.title ? ` · ${page.title}` : ''}
+            </h2>
+            <PageControls
+              pageId={page.id}
+              currentTemplateId={page.template_id}
+              kind="album"
+              isFirst={idx === 0}
+              isLast={idx === data.pages.length - 1}
+            />
+          </div>
           <PageView
             templateId={page.template_id}
             slots={data.slotsByPage.get(page.id) ?? []}
