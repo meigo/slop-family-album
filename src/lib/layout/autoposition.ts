@@ -1,6 +1,8 @@
 import type { SlotLayout } from './templates';
 import { IDENTITY_TRANSFORM, type SlotTransform } from './transform';
 
+const HORIZON_TAGS = new Set(['landscape', 'beach', 'forest', 'snow', 'city', 'outdoor']);
+
 /**
  * Compute a default crop transform for a photo placed in a slot.
  *
@@ -20,7 +22,7 @@ import { IDENTITY_TRANSFORM, type SlotTransform } from './transform';
  *   1. If faces exist: compute bounding box around all faces; translate so
  *      that bbox's center sits at the slot's center.
  *   2. Else if topTag suggests a horizon-biased scene (landscape, beach,
- *      forest, snow, city, outdoor): shift down ~15% so the horizon sits
+ *      forest, snow, city, outdoor): shift down ~17% so the horizon sits
  *      at the upper third (rule-of-thirds).
  *   3. Else: identity (object-fit: cover center crop).
  *
@@ -36,6 +38,10 @@ export function autoPositionTransform(args: {
   slot: SlotLayout;
 }): SlotTransform {
   const { photoWidth, photoHeight, faces, topTag, slot } = args;
+
+  if (photoWidth <= 0 || photoHeight <= 0 || slot.w <= 0 || slot.h <= 0) {
+    return { ...IDENTITY_TRANSFORM };
+  }
 
   const slotAspect = slot.w / slot.h;
   const photoAspect = photoWidth / photoHeight;
@@ -79,18 +85,15 @@ export function autoPositionTransform(args: {
   }
 
   // --- Pass 2: horizon-biased tags ---
-  if (topTag) {
-    const horizonTags = new Set(['landscape', 'beach', 'forest', 'snow', 'city', 'outdoor']);
-    if (horizonTags.has(topTag)) {
-      let visibleFractionY = 1;
-      if (photoAspect <= slotAspect) {
-        visibleFractionY = photoAspect / slotAspect;
-      }
-      const desiredOffsetY = -0.17 / visibleFractionY;
-      const maxOffsetY = (1 - visibleFractionY) / (2 * visibleFractionY);
-      const clampedY = Math.max(-maxOffsetY, Math.min(maxOffsetY, desiredOffsetY));
-      return { offsetX: 0, offsetY: clampedY, scale: 1 };
+  if (topTag && HORIZON_TAGS.has(topTag)) {
+    let visibleFractionY = 1;
+    if (photoAspect <= slotAspect) {
+      visibleFractionY = photoAspect / slotAspect;
     }
+    const desiredOffsetY = -0.17;
+    const maxOffsetY = (1 - visibleFractionY) / (2 * visibleFractionY);
+    const clampedY = Math.max(-maxOffsetY, Math.min(maxOffsetY, desiredOffsetY));
+    return { offsetX: 0, offsetY: clampedY, scale: 1 };
   }
 
   // --- Pass 3: identity ---
