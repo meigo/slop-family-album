@@ -71,15 +71,20 @@
       }
     }
     effectiveBucket = bk;
+    // If we have neither a bucket nor a current photo (empty album slot),
+    // bucket/nearby scopes are meaningless — fall back to "all".
+    if (!effectiveBucket && currentPhotoId === null) {
+      scope = 'all';
+    }
     await loadCandidates();
   });
 
   // Reload when scope changes.
   $effect(() => {
-    if (effectiveBucket) {
+    scope;
+    if (effectiveBucket || scope === 'all') {
       void loadCandidates();
     }
-    scope;
   });
 
   let sorted = $derived.by(() => {
