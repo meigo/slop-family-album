@@ -7,6 +7,18 @@ export interface ProjectRow {
   created_at: number;
   slot_gap_px: number;
   page_padding_px: number;
+  week_start: number;
+}
+
+export interface CalendarEventRow {
+  id: number;
+  project_id: number;
+  month: number; // 1..12
+  day: number;   // 1..31
+  year: number | null; // null = yearly recurring
+  kind: 'birthday' | 'anniversary' | 'event' | 'holiday';
+  label: string;
+  created_at: number;
 }
 
 export interface PhotoRow {

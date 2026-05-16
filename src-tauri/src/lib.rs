@@ -110,5 +110,11 @@ fn migrations() -> Vec<tauri_plugin_sql::Migration> {
       sql: include_str!("../migrations/009_page_padding.sql"),
       kind: tauri_plugin_sql::MigrationKind::Up,
     },
+    tauri_plugin_sql::Migration {
+      version: 10,
+      description: "calendar_events_and_week_start",
+      sql: include_str!("../migrations/010_calendar_events.sql"),
+      kind: tauri_plugin_sql::MigrationKind::Up,
+    },
   ]
 }

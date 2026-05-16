@@ -4,6 +4,7 @@ import type {
   FaceRow, FaceInsert, PersonClusterRow,
   SelectionRow, SelectedPhotoRow, SelectedPhotoInsert,
   PageRow, PageInsert, PageSlotRow, PageSlotInsert,
+  CalendarEventRow,
 } from './types';
 
 let _db: Database | null = null;
@@ -759,4 +760,58 @@ export async function getPhotoLayoutContext(photoId: number): Promise<{ width: n
     'SELECT tag FROM photo_tag WHERE photo_id = ? ORDER BY score DESC LIMIT 1', [photoId]
   );
   return { width: p.width, height: p.height, faces, topTag: tagRows[0]?.tag ?? null };
+}
+
+export async function listEvents(projectId: number): Promise<CalendarEventRow[]> {
+  const d = await db();
+  return d.select<CalendarEventRow[]>(
+    'SELECT * FROM calendar_event WHERE project_id = ? ORDER BY month, day, label',
+    [projectId]
+  );
+}
+
+export async function addEvent(args: {
+  project_id: number;
+  month: number;
+  day: number;
+  year: number | null;
+  kind: 'birthday' | 'anniversary' | 'event' | 'holiday';
+  label: string;
+}): Promise<number> {
+  const d = await db();
+  const r = await d.execute(
+    `INSERT INTO calendar_event (project_id, month, day, year, kind, label, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [args.project_id, args.month, args.day, args.year, args.kind, args.label, Date.now()]
+  );
+  return r.lastInsertId as number;
+}
+
+export async function updateEvent(id: number, fields: Partial<{
+  month: number;
+  day: number;
+  year: number | null;
+  kind: 'birthday' | 'anniversary' | 'event' | 'holiday';
+  label: string;
+}>): Promise<void> {
+  const d = await db();
+  const cols: string[] = [];
+  const vals: unknown[] = [];
+  for (const [k, v] of Object.entries(fields)) {
+    cols.push(`${k} = ?`);
+    vals.push(v);
+  }
+  if (cols.length === 0) return;
+  vals.push(id);
+  await d.execute(`UPDATE calendar_event SET ${cols.join(', ')} WHERE id = ?`, vals);
+}
+
+export async function deleteEvent(id: number): Promise<void> {
+  const d = await db();
+  await d.execute('DELETE FROM calendar_event WHERE id = ?', [id]);
+}
+
+export async function updateProjectWeekStart(id: number, weekStart: 0 | 1): Promise<void> {
+  const d = await db();
+  await d.execute('UPDATE project SET week_start = ? WHERE id = ?', [weekStart, id]);
 }
