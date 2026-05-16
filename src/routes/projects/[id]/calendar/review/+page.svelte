@@ -4,9 +4,11 @@
   import PhotoPicker from '$lib/components/PhotoPicker.svelte';
   import PageControls from '$lib/components/PageControls.svelte';
   import SlotEditor from '$lib/components/SlotEditor.svelte';
+  import TextEditor from '$lib/components/TextEditor.svelte';
   import { getTemplate } from '$lib/layout/templates';
   import { invalidateAll } from '$app/navigation';
-  import { updateSlotPhoto, insertBlankPage, updateProjectSlotGap, updateProjectPagePadding, updateProjectWeekStart } from '$lib/db';
+  import { updateSlotPhoto, insertBlankPage, updateProjectSlotGap, updateProjectPagePadding, updateProjectWeekStart, addPageText } from '$lib/db';
+  import { DEFAULT_TEXT_STYLE, serializeStyle } from '$lib/text/style';
 
   let { data } = $props();
 
@@ -80,6 +82,7 @@
 
   function openEditor(pageId: number, slotIndex: number) {
     pickerOpen = null;
+    editingTextId = null;
     editorOpen = { pageId, slotIndex };
   }
 
@@ -88,6 +91,30 @@
     await updateSlotPhoto(pickerOpen.pageId, pickerOpen.slotIndex, photoId);
     pickerOpen = null;
     await invalidateAll();
+  }
+
+  let editingTextId = $state<{ pageId: number; textId: number } | null>(null);
+
+  function openTextEditor(pageId: number, textId: number) {
+    pickerOpen = null;
+    editorOpen = null;
+    editingTextId = { pageId, textId };
+  }
+
+  async function addText(pageId: number) {
+    const id = await addPageText({
+      page_id: pageId,
+      position_x: 0.1,
+      position_y: 0.4,
+      width: 0.8,
+      height: 0.2,
+      content: 'Tap to edit',
+      style_json: serializeStyle(DEFAULT_TEXT_STYLE),
+    });
+    await invalidateAll();
+    pickerOpen = null;
+    editorOpen = null;
+    editingTextId = { pageId, textId: id };
   }
 </script>
 
@@ -164,6 +191,9 @@
               pageTitle={page.title}
               events={data.events}
               {weekStart}
+              texts={data.textsByPage.get(page.id) ?? []}
+              editingTextId={editingTextId?.pageId === page.id ? editingTextId.textId : null}
+              onEditText={(textId) => openTextEditor(page.id, textId)}
             />
             {#if editorOpen && editorOpen.pageId === page.id}
               {@const editorSlots = data.slotsByPage.get(page.id) ?? []}
@@ -197,8 +227,18 @@
                 </div>
               {/if}
             {/if}
+            {#if editingTextId && editingTextId.pageId === page.id}
+              {@const editingText = (data.textsByPage.get(page.id) ?? []).find((t) => t.id === editingTextId!.textId)}
+              {#if editingText}
+                <TextEditor
+                  text={editingText}
+                  {pagePaddingPx}
+                  onClose={() => editingTextId = null}
+                />
+              {/if}
+            {/if}
           </div>
-          <div class="mt-1">
+          <div class="mt-1 flex items-center gap-2">
             <PageControls
               pageId={page.id}
               currentTemplateId={page.template_id}
@@ -206,6 +246,12 @@
               isFirst={idx === 0}
               isLast={idx === data.pages.length - 1}
             />
+            <button
+              type="button"
+              class="btn-secondary"
+              style="font-size: 0.75rem; padding: 0.25rem 0.5rem;"
+              onclick={() => addText(page.id)}
+            >+ add text</button>
           </div>
         </section>
         <button

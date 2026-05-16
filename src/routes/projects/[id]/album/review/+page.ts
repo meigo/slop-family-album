@@ -4,6 +4,7 @@ import {
   listPagesForSelection,
   listSlotsForPages,
   enrichSlotsWithLayoutContext,
+  listPageText,
 } from '$lib/db';
 import { error } from '@sveltejs/kit';
 
@@ -25,5 +26,14 @@ export async function load({ params }) {
     arr.push(s);
     slotsByPage.set(s.page_id, arr);
   }
-  return { project, selection, pages, slotsByPage };
+
+  const texts = pages.length > 0 ? await listPageText(pages.map((p) => p.id)) : [];
+  const textsByPage = new Map<number, typeof texts>();
+  for (const t of texts) {
+    const arr = textsByPage.get(t.page_id) ?? [];
+    arr.push(t);
+    textsByPage.set(t.page_id, arr);
+  }
+
+  return { project, selection, pages, slotsByPage, textsByPage };
 }
