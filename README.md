@@ -20,6 +20,8 @@ Local-first desktop app for building printed family photo albums and seasonal-me
 
 **Phase 3e (Sorter view) — complete.** Drag-reorder pages from a thumbnail-grid view.
 
+**Phase 3f (In-place crop editor) — complete.** Slot edges show swap-photo and adjust-crop icons on hover; crop adjustments happen in-place over the slot (drag to reposition, scroll to zoom). Auto-position now uses `object-position` so slots always cover fully — no edge gaps. Empty slots show a checkerboard.
+
 Phase 4 (PDF export + LLM captions + optional per-photo color) is planned but not yet implemented.
 
 See `docs/superpowers/specs/2026-05-14-family-album-builder-design.md` for the design.
