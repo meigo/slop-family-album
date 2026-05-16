@@ -43,6 +43,13 @@ html, body {
   padding: 1rem;
 }
 
+/* Tailwind v4 preflight resets <button> cursor to default. Restore the
+   pointer cursor globally for any non-disabled button so every clickable
+   button feels consistent. */
+button:not(:disabled) {
+  cursor: pointer;
+}
+
 .btn-primary {
   background: var(--color-fg);
   color: var(--color-bg);
