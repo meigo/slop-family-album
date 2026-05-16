@@ -98,6 +98,7 @@
             <PageView
               templateId={page.template_id}
               slots={data.slotsByPage.get(page.id) ?? []}
+              onSlotClick={(i) => openPicker(page.id, i, page.title ?? '')}
               onSwapPhoto={(i) => openPicker(page.id, i, page.title ?? '')}
               onAdjustCrop={(i) => openEditor(page.id, i)}
               editingSlotIndex={editorOpen?.pageId === page.id ? editorOpen!.slotIndex : null}
