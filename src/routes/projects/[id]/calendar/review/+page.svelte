@@ -114,7 +114,7 @@
     <div class="grid grid-cols-2 gap-4 mt-4">
       <button
         type="button"
-        class="btn-secondary self-center mb-2"
+        class="btn-secondary self-center col-span-2 justify-self-center mb-2"
         style="font-size: 0.75rem; padding: 0.25rem 0.5rem;"
         onclick={() => insertBlankBelow(-1)}
         disabled={inserting}
@@ -144,7 +144,7 @@
         </section>
         <button
           type="button"
-          class="btn-secondary self-center"
+          class="btn-secondary self-center col-span-2 justify-self-center"
           style="font-size: 0.75rem; padding: 0.25rem 0.5rem;"
           onclick={() => insertBlankBelow(idx)}
           disabled={inserting}
