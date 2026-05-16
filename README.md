@@ -24,7 +24,9 @@ Local-first desktop app for building printed family photo albums and seasonal-me
 
 **Phase 4a (Calendar grid + events) — complete.** Calendar pages render an actual month grid (day headers + dates aligned to weekday, Mon/Sun toggle per project). Per-project events table with birthday/anniversary/event/holiday kinds, yearly-recurring or one-off. Inline events panel on the project page; one-click presets for Estonian + US holidays. Event marks show on the rendered grid color-coded by kind.
 
-Phase 4b (text layers), Phase 4c (slot polish), Phase 4d (PDF export) — planned but not yet implemented.
+**Phase 4b (Text layers + Google Fonts) — complete.** Place text overlays anywhere on any page (album or calendar). Drag to reposition, drag the corner to resize, in-place edit content + style (font family, size, weight, italic, color, alignment). Curated catalog of ~20 Google Fonts loaded on-demand via a `<link>` tag.
+
+Phase 4c (slot polish), Phase 4d (PDF export) — planned but not yet implemented.
 
 See `docs/superpowers/specs/2026-05-14-family-album-builder-design.md` for the design.
 
