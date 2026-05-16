@@ -8,6 +8,7 @@
   import CalendarGrid from './CalendarGrid.svelte';
   import TextOverlay from './TextOverlay.svelte';
   import type { CalendarEventRow, PageTextRow } from '$lib/db/types';
+  import { Replace, Crop, Trash2 } from '@lucide/svelte';
 
   interface Slot {
     slot_index: number;
@@ -124,32 +125,29 @@
               {#if onSwapPhoto}
                 <button
                   type="button"
-                  class="rounded p-1 text-xs"
-                  style="background: rgba(0,0,0,0.6); color: white; border: none; cursor: pointer;"
+                  class="slot-action-btn"
                   onclick={(e) => { e.stopPropagation(); onSwapPhoto?.(i); }}
                   title="Swap photo"
                   aria-label={`Swap photo in slot ${i + 1}`}
-                >🖼</button>
+                ><Replace size={14} /></button>
               {/if}
               {#if onAdjustCrop}
                 <button
                   type="button"
-                  class="rounded p-1 text-xs"
-                  style="background: rgba(0,0,0,0.6); color: white; border: none; cursor: pointer;"
+                  class="slot-action-btn"
                   onclick={(e) => { e.stopPropagation(); onAdjustCrop?.(i); }}
                   title="Adjust crop / brightness"
                   aria-label={`Adjust crop in slot ${i + 1}`}
-                >✥</button>
+                ><Crop size={14} /></button>
               {/if}
               {#if onRemovePhoto}
                 <button
                   type="button"
-                  class="rounded p-1 text-xs"
-                  style="background: rgba(0,0,0,0.6); color: white; border: none; cursor: pointer;"
+                  class="slot-action-btn"
                   onclick={(e) => { e.stopPropagation(); onRemovePhoto?.(i); }}
                   title="Remove photo from this slot"
                   aria-label={`Remove photo from slot ${i + 1}`}
-                >🗑</button>
+                ><Trash2 size={14} /></button>
               {/if}
             </div>
           {/if}

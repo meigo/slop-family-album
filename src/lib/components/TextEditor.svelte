@@ -6,6 +6,7 @@
   import { updatePageText, deletePageText } from '$lib/db';
   import { invalidateAll } from '$app/navigation';
   import type { PageTextRow } from '$lib/db/types';
+  import { GripVertical, Italic, AlignLeft, AlignCenter, AlignRight, Trash2, X } from '@lucide/svelte';
 
   interface Props {
     text: PageTextRow;
@@ -139,63 +140,60 @@
   <!-- Floating toolbar above the text. Drag handle on the left. -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
-    style="
-      position: absolute;
-      bottom: 100%;
-      left: 0;
-      margin-bottom: 4px;
-      display: flex;
-      gap: 4px;
-      align-items: center;
-      background: rgba(0,0,0,0.85);
-      color: white;
-      padding: 4px 6px;
-      border-radius: 6px;
-      font-size: 12px;
-      z-index: 7;
-      white-space: nowrap;
-    "
+    class="toolbar"
+    style="position: absolute; bottom: 100%; left: 0; margin-bottom: 4px; z-index: var(--z-toolbar);"
     onpointerdown={(e) => e.stopPropagation()}
   >
-    <!-- Drag handle -->
+    <!-- Drag handle (a div, not a button, so it can capture pointer events
+         and not steal focus from the contentEditable) -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
+      class="toolbar-icon-btn"
       onpointerdown={onDragHandleDown}
       onpointermove={onPointerMove}
       onpointerup={onPointerUp}
       onpointercancel={onPointerUp}
       title="Drag to move"
-      style="
-        padding: 2px 4px;
-        cursor: {dragging ? 'grabbing' : 'grab'};
-        font-size: 14px;
-        line-height: 1;
-        user-select: none;
-        touch-action: none;
-      "
-    >⠿</div>
+      role="button"
+      tabindex="-1"
+      style="cursor: {dragging ? 'grabbing' : 'grab'}; touch-action: none; user-select: none;"
+    >
+      <GripVertical size={16} />
+    </div>
 
-    <select title="Font family" bind:value={style.fontFamily} style="color: black; background: white; padding: 1px 2px; border: 1px solid #999; border-radius: 3px;">
+    <select class="toolbar-field" title="Font family" bind:value={style.fontFamily}>
       {#each FONT_CATALOG as f}
         <option value={f.family} style="font-family: '{f.family}', sans-serif;">{f.family}</option>
       {/each}
     </select>
-    <input title="Font size (px)" type="number" min="8" max="200" bind:value={style.fontSize} style="width: 60px; color: black; background: white; padding: 1px 4px; border: 1px solid #999; border-radius: 3px;" />
-    <select title="Font weight (thickness)" bind:value={style.fontWeight} style="color: black; background: white; padding: 1px 2px; border: 1px solid #999; border-radius: 3px;">
+    <input class="toolbar-field" title="Font size (px)" type="number" min="8" max="200" bind:value={style.fontSize} style="width: 56px;" />
+    <select class="toolbar-field" title="Font weight (thickness)" bind:value={style.fontWeight}>
       {#each availableWeights as w}
         <option value={w}>{w}</option>
       {/each}
     </select>
-    <input title="Line height" type="number" min="0.8" max="3" step="0.1" bind:value={style.lineHeight} style="width: 56px; color: black; background: white; padding: 1px 4px; border: 1px solid #999; border-radius: 3px;" />
-    <button type="button" title="Italic" onclick={() => style.italic = !style.italic} style="padding: 2px 6px; background: {style.italic ? 'rgba(255,255,255,0.3)' : 'transparent'}; color: white; border: 1px solid white; border-radius: 3px;"><em>I</em></button>
-    <input title="Text color" type="color" bind:value={style.color} style="width: 28px; height: 24px; border: none; background: transparent;" />
-    <span title="Text alignment inside the box" style="opacity: 0.7; margin-left: 4px;">align</span>
-    <button type="button" title="Align text left" onclick={() => style.align = 'left'} style="padding: 2px 6px; background: {style.align === 'left' ? 'rgba(255,255,255,0.3)' : 'transparent'}; color: white; border: 1px solid white; border-radius: 3px;">L</button>
-    <button type="button" title="Center text" onclick={() => style.align = 'center'} style="padding: 2px 6px; background: {style.align === 'center' ? 'rgba(255,255,255,0.3)' : 'transparent'}; color: white; border: 1px solid white; border-radius: 3px;">C</button>
-    <button type="button" title="Align text right" onclick={() => style.align = 'right'} style="padding: 2px 6px; background: {style.align === 'right' ? 'rgba(255,255,255,0.3)' : 'transparent'}; color: white; border: 1px solid white; border-radius: 3px;">R</button>
+    <input class="toolbar-field" title="Line height" type="number" min="0.8" max="3" step="0.1" bind:value={style.lineHeight} style="width: 52px;" />
+    <button type="button" class="toolbar-btn" class:active={style.italic} title="Italic" onclick={() => style.italic = !style.italic}>
+      <Italic size={14} />
+    </button>
+    <input class="toolbar-field-color" title="Text color" type="color" bind:value={style.color} />
+    <span class="toolbar-label" title="Text alignment inside the box" style="margin-left: 4px;">align</span>
+    <button type="button" class="toolbar-btn" class:active={style.align === 'left'} title="Align text left" onclick={() => style.align = 'left'}>
+      <AlignLeft size={14} />
+    </button>
+    <button type="button" class="toolbar-btn" class:active={style.align === 'center'} title="Center text" onclick={() => style.align = 'center'}>
+      <AlignCenter size={14} />
+    </button>
+    <button type="button" class="toolbar-btn" class:active={style.align === 'right'} title="Align text right" onclick={() => style.align = 'right'}>
+      <AlignRight size={14} />
+    </button>
 
-    <button type="button" title="Save changes" onclick={save} style="padding: 2px 8px; margin-left: 4px; background: white; color: black; border: none; border-radius: 3px;">save</button>
-    <button type="button" title="Delete this text" onclick={remove} style="padding: 2px 6px; background: transparent; color: #ff8888; border: 1px solid #ff8888; border-radius: 3px;">del</button>
-    <button type="button" title="Cancel (Esc)" onclick={onClose} style="padding: 2px 6px; background: transparent; color: white; border: 1px solid white; border-radius: 3px;">esc</button>
+    <button type="button" class="toolbar-btn toolbar-btn-primary" title="Save changes" onclick={save} style="margin-left: 4px;">Save</button>
+    <button type="button" class="toolbar-btn toolbar-btn-danger" title="Delete this text" onclick={remove}>
+      <Trash2 size={14} />
+    </button>
+    <button type="button" class="toolbar-btn" title="Cancel (Esc)" onclick={onClose}>
+      <X size={14} />
+    </button>
   </div>
 </div>
