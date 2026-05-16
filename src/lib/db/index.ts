@@ -5,7 +5,7 @@ import type {
   FaceRow, FaceInsert, PersonClusterRow,
   SelectionRow, SelectedPhotoRow, SelectedPhotoInsert,
   PageRow, PageInsert, PageSlotRow, PageSlotInsert,
-  CalendarEventRow,
+  CalendarEventRow, PageTextRow,
 } from './types';
 
 let _db: Database | null = null;
@@ -839,4 +839,63 @@ export async function seedHolidays(projectId: number, presetKey: 'estonian' | 'u
     inserted++;
   }
   return inserted;
+}
+
+export async function listPageText(pageIds: readonly number[]): Promise<PageTextRow[]> {
+  if (pageIds.length === 0) return [];
+  const d = await db();
+  const placeholders = pageIds.map(() => '?').join(',');
+  return d.select<PageTextRow[]>(
+    `SELECT * FROM page_text WHERE page_id IN (${placeholders}) ORDER BY page_id, z_order, id`,
+    [...pageIds]
+  );
+}
+
+export async function addPageText(args: {
+  page_id: number;
+  position_x: number;
+  position_y: number;
+  width: number;
+  height: number;
+  content: string;
+  style_json: string;
+}): Promise<number> {
+  const d = await db();
+  const r = await d.execute(
+    `INSERT INTO page_text (page_id, position_x, position_y, width, height, content, style_json, z_order, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)`,
+    [args.page_id, args.position_x, args.position_y, args.width, args.height, args.content, args.style_json, Date.now()]
+  );
+  await bumpSelectionFromPage(args.page_id);
+  return r.lastInsertId as number;
+}
+
+export async function updatePageText(id: number, fields: Partial<{
+  position_x: number;
+  position_y: number;
+  width: number;
+  height: number;
+  content: string;
+  style_json: string;
+  z_order: number;
+}>): Promise<void> {
+  const d = await db();
+  const cols: string[] = [];
+  const vals: unknown[] = [];
+  for (const [k, v] of Object.entries(fields)) {
+    cols.push(`${k} = ?`);
+    vals.push(v);
+  }
+  if (cols.length === 0) return;
+  vals.push(id);
+  await d.execute(`UPDATE page_text SET ${cols.join(', ')} WHERE id = ?`, vals);
+  const rows = await d.select<{ page_id: number }[]>('SELECT page_id FROM page_text WHERE id = ?', [id]);
+  if (rows[0]) await bumpSelectionFromPage(rows[0].page_id);
+}
+
+export async function deletePageText(id: number): Promise<void> {
+  const d = await db();
+  const rows = await d.select<{ page_id: number }[]>('SELECT page_id FROM page_text WHERE id = ?', [id]);
+  await d.execute('DELETE FROM page_text WHERE id = ?', [id]);
+  if (rows[0]) await bumpSelectionFromPage(rows[0].page_id);
 }

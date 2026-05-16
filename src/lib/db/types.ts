@@ -178,3 +178,16 @@ export interface PageSlotInsert {
   photo_id: number | null;
   transform_json?: string | null;
 }
+
+export interface PageTextRow {
+  id: number;
+  page_id: number;
+  position_x: number;
+  position_y: number;
+  width: number;
+  height: number;
+  content: string;
+  style_json: string;
+  z_order: number;
+  created_at: number;
+}
