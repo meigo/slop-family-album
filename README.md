@@ -4,15 +4,17 @@ Local-first desktop app for building printed family photo albums and seasonal-me
 
 ## Status
 
-**Phase 1 (Foundation) — complete.** App indexes a folder into SQLite with thumbnails + EXIF and shows the library as a grid.
+**Phase 1 (Foundation) — complete.** Index folder → SQLite with thumbnails + EXIF, library grid.
 
-**Phase 2a (CV pipeline) — complete.** Python sidecar runs blur + face detection + perceptual hash on every indexed photo. Duplicate groups are detected via pHash Hamming distance.
+**Phase 2a (CV pipeline) — complete.** Blur + face detection + perceptual hash; pHash duplicate groups.
 
-**Phase 2b (Semantic CV) — complete.** Image embeddings (OpenCLIP), zero-shot scene tags, SFace face embeddings, face clustering, exposure scoring. People page lets you name face clusters and pin "must-include" ones.
+**Phase 2b (Semantic CV) — complete.** OpenCLIP embeddings, scene tags, SFace face embeddings, exposure scoring. Face clustering retained in code but de-emphasized in v1 UX (People page not surfaced in nav).
 
-**Phase 3a (Selection) — complete.** Aggregate scoring + chronological album selection + seasonal-memory calendar selection. Dashboard has Generate buttons; selection view at `/projects/[id]/selection/[kind]` shows the ordered list bucket-by-bucket with thumbnails, rank, and score.
+**Phase 3a (Selection) — complete.** Aggregate scoring + album/calendar selection algorithms (chronological, seasonal-memory). Year filter, per-month cap, adjacent-month fallback.
 
-Phase 3b (page layout + review UI) and Phase 4 (PDF export + LLM captions) are planned but not yet implemented.
+**Phase 3b (Layout + Review) — complete.** Layout templates + page assembly + visual review UI. Click any slot to swap via the popup picker (sortable by score, chronological, or visual similarity using CLIP embeddings; scope filter chips for bucket/nearby/all). Drop-in workflow: Generate → review → swap as needed → done.
+
+Phase 4 (PDF export + LLM captions) is planned but not yet implemented.
 
 See `docs/superpowers/specs/2026-05-14-family-album-builder-design.md` for the design.
 
