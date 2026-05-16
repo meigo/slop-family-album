@@ -5,7 +5,6 @@
   import { updateSlotTransform } from '$lib/db';
   import { invalidateAll } from '$app/navigation';
   import type { SlotLayout } from '$lib/layout/templates';
-  import EmptySlotBg from './EmptySlotBg.svelte';
   import { Check, RotateCcw, X, SunMedium, Contrast, Droplets } from '@lucide/svelte';
 
   interface Props {
@@ -97,7 +96,6 @@
   onwheel={onWheel}
   role="presentation"
 >
-  <EmptySlotBg />
   <img
     src={convertFileSrc(photoPath)}
     alt=""

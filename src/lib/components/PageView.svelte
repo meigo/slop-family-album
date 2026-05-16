@@ -3,7 +3,6 @@
   import { convertFileSrc } from '@tauri-apps/api/core';
   import { parseTransform, cssForTransform, type SlotTransform, IDENTITY_TRANSFORM } from '$lib/layout/transform';
   import { autoPositionTransform } from '$lib/layout/autoposition';
-  import EmptySlotBg from './EmptySlotBg.svelte';
   import { parseYearMonth } from '$lib/calendar/grid';
   import CalendarGrid from './CalendarGrid.svelte';
   import TextOverlay from './TextOverlay.svelte';
@@ -102,8 +101,10 @@
             loading="lazy"
           />
         {:else}
-          <EmptySlotBg />
-          <div class="absolute inset-0 flex items-center justify-center" style="color: var(--color-muted)">
+          <div
+            class="absolute inset-0 flex items-center justify-center"
+            style="color: var(--color-muted); outline: 1px dashed currentColor; outline-offset: -2px; opacity: 0.5;"
+          >
             <span class="text-xs">empty slot</span>
           </div>
         {/if}
