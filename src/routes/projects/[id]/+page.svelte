@@ -1,5 +1,6 @@
 <script lang="ts">
   import PageHeader from '$lib/components/PageHeader.svelte';
+  import EventsPanel from '$lib/components/EventsPanel.svelte';
   import { indexProject } from '$lib/indexing/scanner';
   import { indexProgress, type IndexProgress } from '$lib/indexing/progress';
   import { invalidateAll, goto } from '$app/navigation';
@@ -7,6 +8,7 @@
   import { generateAlbumSelection } from '$lib/selection/album';
   import { generateCalendarSelection } from '$lib/selection/calendar';
   import { assembleAlbumPages, assembleCalendarPages } from '$lib/layout/assembly';
+  import { seedHolidays } from '$lib/db';
 
   let { data } = $props();
 
@@ -67,6 +69,11 @@
     } finally {
       generating = null;
     }
+  }
+
+  async function seed(kind: 'estonian' | 'us') {
+    await seedHolidays(data.project.id, kind);
+    await invalidateAll();
   }
 </script>
 
@@ -151,4 +158,15 @@
       </details>
     {/if}
   </section>
+
+  <section class="surface-card mt-4">
+    <h2 class="text-lg font-medium mb-2">Holiday presets</h2>
+    <p class="text-sm mb-2" style="color: var(--color-muted)">Add commonly-used holidays as yearly events.</p>
+    <div class="flex gap-2">
+      <button type="button" class="btn-secondary" onclick={() => seed('estonian')}>Add Estonian holidays</button>
+      <button type="button" class="btn-secondary" onclick={() => seed('us')}>Add US holidays</button>
+    </div>
+  </section>
+
+  <EventsPanel projectId={data.project.id} />
 </div>
