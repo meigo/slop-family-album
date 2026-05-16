@@ -89,21 +89,6 @@
     editingTextId = { pageId, textId };
   }
 
-  function snapTargetsFor(templateId: string): { x: number[]; y: number[] } {
-    const tpl = getTemplate(templateId);
-    const xs = new Set<number>([0, 0.5, 1]);
-    const ys = new Set<number>([0, 0.5, 1]);
-    for (const s of tpl.slots) {
-      xs.add(s.x); xs.add(s.x + s.w);
-      ys.add(s.y); ys.add(s.y + s.h);
-    }
-    if (tpl.calendarGrid) {
-      xs.add(tpl.calendarGrid.x); xs.add(tpl.calendarGrid.x + tpl.calendarGrid.w);
-      ys.add(tpl.calendarGrid.y); ys.add(tpl.calendarGrid.y + tpl.calendarGrid.h);
-    }
-    return { x: [...xs].sort((a, b) => a - b), y: [...ys].sort((a, b) => a - b) };
-  }
-
   async function addText(pageId: number) {
     const id = await addPageText({
       page_id: pageId,
@@ -231,13 +216,10 @@
             {/if}
             {#if editingTextId && editingTextId.pageId === page.id}
               {@const editingText = (data.textsByPage.get(page.id) ?? []).find((t) => t.id === editingTextId!.textId)}
-              {@const snaps = snapTargetsFor(page.template_id)}
               {#if editingText}
                 <TextEditor
                   text={editingText}
                   {pagePaddingPx}
-                  snapTargetsX={snaps.x}
-                  snapTargetsY={snaps.y}
                   onClose={() => editingTextId = null}
                 />
               {/if}

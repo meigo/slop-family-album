@@ -11,14 +11,8 @@
     text: PageTextRow;
     pagePaddingPx: number;
     onClose: () => void;
-    /** Vertical lines (page-relative 0..1) the text edges/center can snap to. */
-    snapTargetsX?: number[];
-    /** Horizontal lines (page-relative 0..1) the text edges/center can snap to. */
-    snapTargetsY?: number[];
   }
-  let { text, pagePaddingPx, onClose, snapTargetsX = [0, 0.5, 1], snapTargetsY = [0, 0.5, 1] }: Props = $props();
-
-  const SNAP_THRESHOLD = 0.02; // fractional — ~12px on a 600px-wide page
+  let { text, pagePaddingPx, onClose }: Props = $props();
 
   // Intentionally snapshot the prop's initial values into local $state — this
   // component edits a local copy and only writes back on save().
@@ -38,25 +32,6 @@
 
   function clamp01(v: number) { return Math.max(0, Math.min(1, v)); }
 
-  let activeSnapX = $state<number | null>(null);
-  let activeSnapY = $state<number | null>(null);
-
-  function nearestSnap(targets: number[], candidates: number[]): { target: number; delta: number } | null {
-    let best: { target: number; delta: number } | null = null;
-    for (const t of targets) {
-      for (const c of candidates) {
-        const d = t - c;
-        if (Math.abs(d) < SNAP_THRESHOLD && (best === null || Math.abs(d) < Math.abs(best.delta))) {
-          best = { target: t, delta: d };
-        }
-      }
-    }
-    return best;
-  }
-
-  // Refs for the outer wrapper and the contentEditable. We use the outer
-  // wrapper's parent to compute the page rect; we use the contentEditable's
-  // own rect to know the text's currently-rendered size (for snap edges).
   let wrapperEl: HTMLDivElement | undefined = $state(undefined);
   let editorEl: HTMLDivElement | undefined = $state(undefined);
 
@@ -70,37 +45,18 @@
   }
 
   function onPointerMove(e: PointerEvent) {
-    if (!dragging || !dragStart || !editorEl) return;
+    if (!dragging || !dragStart) return;
     const dx = (e.clientX - dragStart.mouseX) / dragStart.parentRect.width;
     const dy = (e.clientY - dragStart.mouseY) / dragStart.parentRect.height;
-
-    let nx = clamp01(dragStart.pos.x + dx);
-    let ny = clamp01(dragStart.pos.y + dy);
-
-    if (e.shiftKey) {
-      activeSnapX = null;
-      activeSnapY = null;
-    } else {
-      // Measure the currently-rendered text size in page fractions so the
-      // right and bottom edges (plus the center) participate in snap.
-      const textRect = editorEl.getBoundingClientRect();
-      const wFrac = textRect.width / dragStart.parentRect.width;
-      const hFrac = textRect.height / dragStart.parentRect.height;
-
-      const sx = nearestSnap(snapTargetsX, [nx, nx + wFrac / 2, nx + wFrac]);
-      if (sx) { nx = clamp01(nx + sx.delta); activeSnapX = sx.target; } else { activeSnapX = null; }
-      const sy = nearestSnap(snapTargetsY, [ny, ny + hFrac / 2, ny + hFrac]);
-      if (sy) { ny = clamp01(ny + sy.delta); activeSnapY = sy.target; } else { activeSnapY = null; }
-    }
-
-    pos = { x: nx, y: ny };
+    pos = {
+      x: clamp01(dragStart.pos.x + dx),
+      y: clamp01(dragStart.pos.y + dy),
+    };
   }
 
   function onPointerUp(e: PointerEvent) {
     dragging = false;
     dragStart = null;
-    activeSnapX = null;
-    activeSnapY = null;
     try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {
       // ignore: pointer may already be released
     }
@@ -150,37 +106,6 @@
 </script>
 
 <svelte:window onkeydown={(e) => { if (e.key === 'Escape') onClose(); }} />
-
-<!-- Snap guide lines, positioned relative to the parent (the page wrapper).
-     Rendered as siblings of the editor box so the lines span the full page. -->
-{#if activeSnapX !== null}
-  <div
-    style="
-      position: absolute;
-      left: calc({pagePaddingPx}px + {activeSnapX} * (100% - {2 * pagePaddingPx}px));
-      top: 0; bottom: 0; width: 2px;
-      background: #ff00ff;
-      box-shadow: 0 0 6px #ff00ff;
-      pointer-events: none;
-      z-index: 8;
-      transform: translateX(-1px);
-    "
-  ></div>
-{/if}
-{#if activeSnapY !== null}
-  <div
-    style="
-      position: absolute;
-      top: calc({pagePaddingPx}px + {activeSnapY} * (100% - {2 * pagePaddingPx}px));
-      left: 0; right: 0; height: 2px;
-      background: #ff00ff;
-      box-shadow: 0 0 6px #ff00ff;
-      pointer-events: none;
-      z-index: 8;
-      transform: translateY(-1px);
-    "
-  ></div>
-{/if}
 
 <!-- The editor anchor: positioned at (pos.x, pos.y), sized by content.
      No outline, no resize handle, no drag bar — the text itself is the box.
@@ -239,7 +164,7 @@
       onpointermove={onPointerMove}
       onpointerup={onPointerUp}
       onpointercancel={onPointerUp}
-      title="Drag to move (hold Shift to bypass snap)"
+      title="Drag to move"
       style="
         padding: 2px 4px;
         cursor: {dragging ? 'grabbing' : 'grab'};
