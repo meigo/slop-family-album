@@ -42,3 +42,9 @@ py-sidecar/.pytest_cache/
 py-sidecar/__pycache__/
 py-sidecar/src/**/__pycache__/
 py-sidecar/tests/**/__pycache__/
+
+temp/
+
+# Fixture generator output
+sample-albums/
+tools/fixtures/.cache/
