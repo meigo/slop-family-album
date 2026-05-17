@@ -7,7 +7,7 @@
   import TextEditor from '$lib/components/TextEditor.svelte';
   import { getTemplate } from '$lib/layout/templates';
   import { invalidateAll } from '$app/navigation';
-  import { updateSlotPhoto, clearSlotPhoto, insertBlankPage, updateProjectSlotGap, updateProjectPagePadding, updateProjectPageBgColor, updateProjectWeekStart, addPageText } from '$lib/db';
+  import { updateSlotPhoto, clearSlotPhoto, insertBlankPage, updateProjectSlotGap, updateProjectPagePadding, updateProjectPageBgColor, updateProjectPageAspect, updateProjectWeekStart, addPageText } from '$lib/db';
   import { DEFAULT_TEXT_STYLE, serializeStyle } from '$lib/text/style';
 
   let { data } = $props();
@@ -20,11 +20,22 @@
   let weekStart = $state<0 | 1>(data.project.week_start === 0 ? 0 : 1);
   // svelte-ignore state_referenced_locally
   let pageBgColor = $state(data.project.page_bg_color);
+  // svelte-ignore state_referenced_locally
+  let pageAspect = $state<'landscape' | 'portrait' | 'square' | null>(
+    (data.project.page_aspect === 'landscape' || data.project.page_aspect === 'portrait' || data.project.page_aspect === 'square')
+      ? data.project.page_aspect
+      : null
+  );
 
   async function onPageBgChange(e: Event) {
     const v = (e.currentTarget as HTMLInputElement).value;
     pageBgColor = v;
     await updateProjectPageBgColor(data.project.id, v);
+  }
+
+  async function setPageAspect(a: 'landscape' | 'portrait' | 'square') {
+    pageAspect = a;
+    await updateProjectPageAspect(data.project.id, a);
   }
 
   async function setWeekStart(v: 0 | 1) {
@@ -169,6 +180,12 @@
       <span style="font-family: var(--font-mono); font-size: 0.75rem;">{pageBgColor}</span>
     </label>
     <label class="text-sm mt-1 flex items-center gap-2" style="color: var(--color-muted)">
+      page format:
+      <button type="button" class={pageAspect === 'landscape' ? 'btn-primary' : 'btn-ghost'} style="font-size: 0.75rem; padding: 0.125rem 0.5rem;" onclick={() => setPageAspect('landscape')}>landscape</button>
+      <button type="button" class={pageAspect === 'portrait' ? 'btn-primary' : 'btn-ghost'} style="font-size: 0.75rem; padding: 0.125rem 0.5rem;" onclick={() => setPageAspect('portrait')}>portrait</button>
+      <button type="button" class={pageAspect === 'square' ? 'btn-primary' : 'btn-ghost'} style="font-size: 0.75rem; padding: 0.125rem 0.5rem;" onclick={() => setPageAspect('square')}>square</button>
+    </label>
+    <label class="text-sm mt-1 flex items-center gap-2" style="color: var(--color-muted)">
       week starts:
       <button
         type="button"
@@ -212,6 +229,7 @@
               {slotGapPx}
               {pagePaddingPx}
               {pageBgColor}
+              {pageAspect}
               pageTitle={page.title}
               events={data.events}
               {weekStart}

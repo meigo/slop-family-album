@@ -59,6 +59,18 @@ export async function updateProjectPageBgColor(id: number, color: string): Promi
   await d.execute('UPDATE project SET page_bg_color = ? WHERE id = ?', [color, id]);
 }
 
+/** null = use the template's own aspect (back-compat default for old
+ *  projects); 'landscape' | 'portrait' | 'square' overrides templates
+ *  project-wide. */
+export async function updateProjectPageAspect(
+  id: number,
+  aspect: 'landscape' | 'portrait' | 'square' | null,
+): Promise<void> {
+  const d = await db();
+  if (aspect !== null && aspect !== 'landscape' && aspect !== 'portrait' && aspect !== 'square') return;
+  await d.execute('UPDATE project SET page_aspect = ? WHERE id = ?', [aspect, id]);
+}
+
 export async function upsertPhoto(p: PhotoInsert): Promise<void> {
   const d = await db();
   await d.execute(

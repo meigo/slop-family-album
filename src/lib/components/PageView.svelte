@@ -48,14 +48,25 @@
     onEditText?: (textId: number) => void;
     /** Page background color (hex #rrggbb). Default white. */
     pageBgColor?: string;
+    /** Project-level page aspect override. null = use the template's
+     *  own aspect (back-compat); otherwise the chosen orientation applies
+     *  to every page and matches the export paper. */
+    pageAspect?: 'landscape' | 'portrait' | 'square' | null;
     /** When true, suppress all interactive chrome (hover icons, click
      *  overlay, border) so the page renders as it should appear in print. */
     printMode?: boolean;
   }
-  let { templateId, slots, onSlotClick, onSwapPhoto, onAdjustCrop, onRemovePhoto, editingSlotIndex = null, slotGapPx = 2, pagePaddingPx = 0, pageTitle = null, events = [], weekStart = 1, texts = [], editingTextId = null, onEditText, pageBgColor = '#ffffff', printMode = false }: Props = $props();
+  let { templateId, slots, onSlotClick, onSwapPhoto, onAdjustCrop, onRemovePhoto, editingSlotIndex = null, slotGapPx = 2, pagePaddingPx = 0, pageTitle = null, events = [], weekStart = 1, texts = [], editingTextId = null, onEditText, pageBgColor = '#ffffff', pageAspect = null, printMode = false }: Props = $props();
 
   let tpl = $derived<Template>(getTemplate(templateId));
-  let aspectRatio = $derived(tpl.aspect === 'square' ? '1 / 1' : '4 / 3');
+  let aspectRatio = $derived.by(() => {
+    // Project-level override (paper-accurate ratios).
+    if (pageAspect === 'landscape') return '297 / 210';
+    if (pageAspect === 'portrait') return '210 / 297';
+    if (pageAspect === 'square') return '1 / 1';
+    // Fallback to template's own aspect.
+    return tpl.aspect === 'square' ? '1 / 1' : '4 / 3';
+  });
   let orderedSlots = $derived([...slots].sort((a, b) => a.slot_index - b.slot_index));
 
   function effectiveTransform(slot: Slot, slotLayout: { x: number; y: number; w: number; h: number }): SlotTransform {

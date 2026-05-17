@@ -1,26 +1,24 @@
 <script lang="ts">
   import PageHeader from '$lib/components/PageHeader.svelte';
   import PageView from '$lib/components/PageView.svelte';
-  import { getTemplate } from '$lib/layout/templates';
-  import { PAPER_SIZES, findSize, DEFAULT_SIZE_ID } from '$lib/print/sizes';
+  import { paperForAspect } from '$lib/print/sizes';
   import { printWhenReady, setPrintPageSize } from '$lib/print/prepare';
   import { Printer } from '@lucide/svelte';
 
   let { data } = $props();
 
-  let sizeId = $state(DEFAULT_SIZE_ID.album);
   let printing = $state(false);
-  let chosenSize = $derived(findSize(sizeId));
-
-  function pageAspect(templateId: string): number {
-    const tpl = getTemplate(templateId);
-    return tpl.aspect === 'square' ? 1 : 4 / 3;
-  }
+  let paper = $derived(paperForAspect(data.project.page_aspect));
+  let pageAspect = $derived<'landscape' | 'portrait' | 'square' | null>(
+    (data.project.page_aspect === 'landscape' || data.project.page_aspect === 'portrait' || data.project.page_aspect === 'square')
+      ? data.project.page_aspect
+      : null
+  );
 
   async function exportPdf() {
     printing = true;
     try {
-      setPrintPageSize(chosenSize.cssSize);
+      setPrintPageSize(paper.cssSize);
       await printWhenReady();
     } finally {
       printing = false;
@@ -43,15 +41,10 @@
     </section>
   {:else}
     <section class="surface-card mt-4 flex flex-wrap items-center gap-3">
-      <label class="text-sm flex items-center gap-2">
-        Paper size:
-        <select bind:value={sizeId} class="input-base" style="padding: 0.25rem 0.5rem; width: auto;">
-          {#each PAPER_SIZES as s}
-            <option value={s.id}>{s.label}</option>
-          {/each}
-        </select>
-      </label>
-      <button type="button" class="btn-primary flex items-center gap-2" style="width: auto;" onclick={exportPdf} disabled={printing}>
+      <span class="text-sm" style="color: var(--color-muted)">
+        Paper: A4 {data.project.page_aspect ?? 'landscape (default)'}. Change the page format on the album review page.
+      </span>
+      <button type="button" class="btn-primary flex items-center gap-2" style="width: auto; margin-left: auto;" onclick={exportPdf} disabled={printing}>
         <Printer size={16} />
         {printing ? 'Preparing…' : 'Save as PDF'}
       </button>
@@ -64,18 +57,17 @@
 
 <div class="print-pages">
   {#each data.pages as page (page.id)}
-    <div class="print-page" style="--paper-aspect: {chosenSize.aspect};">
-      <div class="page-letterbox" style="--page-aspect: {pageAspect(page.template_id)};">
-        <PageView
-          templateId={page.template_id}
-          slots={data.slotsByPage.get(page.id) ?? []}
-          slotGapPx={data.project.slot_gap_px}
-          pagePaddingPx={data.project.page_padding_px}
-          pageBgColor={data.project.page_bg_color}
-          texts={data.textsByPage.get(page.id) ?? []}
-          printMode
-        />
-      </div>
+    <div class="print-page" style="--page-aspect: {paper.aspect};">
+      <PageView
+        templateId={page.template_id}
+        slots={data.slotsByPage.get(page.id) ?? []}
+        slotGapPx={data.project.slot_gap_px}
+        pagePaddingPx={data.project.page_padding_px}
+        pageBgColor={data.project.page_bg_color}
+        {pageAspect}
+        texts={data.textsByPage.get(page.id) ?? []}
+        printMode
+      />
     </div>
   {/each}
 </div>
@@ -91,18 +83,6 @@
   }
   .print-page {
     width: 100%;
-    aspect-ratio: var(--paper-aspect);
-    background: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  /* Letterbox: the rendered page sits inside the paper at its own
-     template aspect; if aspects differ, white space fills the rest.
-     Width is min(paper-width, paper-height × page-aspect) so the page
-     fits without overflowing either axis. */
-  .page-letterbox {
-    width: min(100%, calc(100% * var(--page-aspect) / var(--paper-aspect)));
     aspect-ratio: var(--page-aspect);
   }
 

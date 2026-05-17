@@ -9,6 +9,7 @@ export interface ProjectRow {
   page_padding_px: number;
   week_start: number;
   page_bg_color: string;
+  page_aspect: string | null;
 }
 
 export interface CalendarEventRow {

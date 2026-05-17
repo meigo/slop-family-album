@@ -7,7 +7,7 @@
   import TextEditor from '$lib/components/TextEditor.svelte';
   import { getTemplate } from '$lib/layout/templates';
   import { invalidateAll } from '$app/navigation';
-  import { updateSlotPhoto, clearSlotPhoto, insertBlankPage, updateProjectSlotGap, updateProjectPagePadding, updateProjectPageBgColor, addPageText } from '$lib/db';
+  import { updateSlotPhoto, clearSlotPhoto, insertBlankPage, updateProjectSlotGap, updateProjectPagePadding, updateProjectPageBgColor, updateProjectPageAspect, addPageText } from '$lib/db';
   import { DEFAULT_TEXT_STYLE, serializeStyle } from '$lib/text/style';
 
   let { data } = $props();
@@ -18,11 +18,22 @@
   let pagePaddingPx = $state(data.project.page_padding_px);
   // svelte-ignore state_referenced_locally
   let pageBgColor = $state(data.project.page_bg_color);
+  // svelte-ignore state_referenced_locally
+  let pageAspect = $state<'landscape' | 'portrait' | 'square' | null>(
+    (data.project.page_aspect === 'landscape' || data.project.page_aspect === 'portrait' || data.project.page_aspect === 'square')
+      ? data.project.page_aspect
+      : null
+  );
 
   async function onPageBgChange(e: Event) {
     const v = (e.currentTarget as HTMLInputElement).value;
     pageBgColor = v;
     await updateProjectPageBgColor(data.project.id, v);
+  }
+
+  async function setPageAspect(a: 'landscape' | 'portrait' | 'square') {
+    pageAspect = a;
+    await updateProjectPageAspect(data.project.id, a);
   }
 
   let gapSavingTimer: ReturnType<typeof setTimeout> | null = null;
@@ -156,6 +167,12 @@
       <input type="color" bind:value={pageBgColor} oninput={onPageBgChange} style="width: 32px; height: 24px; border: 1px solid var(--color-line); border-radius: 3px;" />
       <span style="font-family: var(--font-mono); font-size: 0.75rem;">{pageBgColor}</span>
     </label>
+    <label class="text-sm mt-1 flex items-center gap-2" style="color: var(--color-muted)">
+      page format:
+      <button type="button" class={pageAspect === 'landscape' ? 'btn-primary' : 'btn-ghost'} style="font-size: 0.75rem; padding: 0.125rem 0.5rem;" onclick={() => setPageAspect('landscape')}>landscape</button>
+      <button type="button" class={pageAspect === 'portrait' ? 'btn-primary' : 'btn-ghost'} style="font-size: 0.75rem; padding: 0.125rem 0.5rem;" onclick={() => setPageAspect('portrait')}>portrait</button>
+      <button type="button" class={pageAspect === 'square' ? 'btn-primary' : 'btn-ghost'} style="font-size: 0.75rem; padding: 0.125rem 0.5rem;" onclick={() => setPageAspect('square')}>square</button>
+    </label>
 
     <div class="flex flex-col gap-6 mt-4">
       <button
@@ -202,6 +219,7 @@
               {slotGapPx}
               {pagePaddingPx}
               {pageBgColor}
+              {pageAspect}
               texts={data.textsByPage.get(page.id) ?? []}
               editingTextId={editingTextId?.pageId === page.id ? editingTextId.textId : null}
               onEditText={(textId) => openTextEditor(page.id, textId)}

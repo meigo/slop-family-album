@@ -128,5 +128,11 @@ fn migrations() -> Vec<tauri_plugin_sql::Migration> {
       sql: include_str!("../migrations/012_page_bg_color.sql"),
       kind: tauri_plugin_sql::MigrationKind::Up,
     },
+    tauri_plugin_sql::Migration {
+      version: 13,
+      description: "project_page_aspect",
+      sql: include_str!("../migrations/013_page_aspect.sql"),
+      kind: tauri_plugin_sql::MigrationKind::Up,
+    },
   ]
 }
