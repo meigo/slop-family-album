@@ -84,9 +84,17 @@ export async function exportPagesToPdf(opts: ExportOptions): Promise<string | nu
     const canvas = await domToCanvas(pageEls[i], {
       scale,
       backgroundColor: null,
-      timeout: 20000, // per-page hard cap; otherwise asset fetch can stall forever
+      timeout: 20000,
+      // modern-screenshot's default flow fetches every <img> via JS,
+      // base64-encodes it, and re-sets src to the giant data URL — slow
+      // and memory-heavy. Tauri's asset:// URLs are same-origin so the
+      // SVG -> canvas snapshot won't taint without the inline step.
+      // Returning the URL unchanged from fetchFn skips that round-trip
+      // entirely; the browser fetches the image natively when it renders
+      // the SVG <foreignObject>.
+      fetchFn: async (url) => url,
       progress: (cur, total) =>
-        console.log(`[pdf-export]   embedding asset ${cur}/${total}`),
+        console.log(`[pdf-export]   asset ${cur}/${total}`),
     });
     console.log(`[pdf-export] page ${i + 1} done in ${Math.round(performance.now() - t0)}ms (canvas ${canvas.width}×${canvas.height})`);
     const imgData = canvas.toDataURL('image/jpeg', jpegQuality);
