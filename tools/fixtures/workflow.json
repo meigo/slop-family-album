@@ -1,0 +1,69 @@
+{
+  "1": {
+    "inputs": {
+      "unet_name": "flux1-schnell-fp8.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader",
+    "_meta": { "title": "Load Diffusion Model" }
+  },
+  "2": {
+    "inputs": {
+      "clip_name1": "clip_l.safetensors",
+      "clip_name2": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+      "type": "flux",
+      "device": "default"
+    },
+    "class_type": "DualCLIPLoader",
+    "_meta": { "title": "DualCLIPLoader" }
+  },
+  "3": {
+    "inputs": { "vae_name": "ae.safetensors" },
+    "class_type": "VAELoader",
+    "_meta": { "title": "Load VAE" }
+  },
+  "4": {
+    "inputs": {
+      "text": "candid smartphone family photo, placeholder prompt — overridden per photo",
+      "clip": ["2", 0]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": { "title": "Positive prompt" }
+  },
+  "5": {
+    "inputs": { "conditioning": ["4", 0] },
+    "class_type": "ConditioningZeroOut",
+    "_meta": { "title": "Zero negative (FLUX ignores it)" }
+  },
+  "6": {
+    "inputs": { "width": 1216, "height": 832, "batch_size": 1 },
+    "class_type": "EmptySD3LatentImage",
+    "_meta": { "title": "Latent (overridden per photo)" }
+  },
+  "7": {
+    "inputs": {
+      "seed": 0,
+      "steps": 4,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1,
+      "model": ["1", 0],
+      "positive": ["4", 0],
+      "negative": ["5", 0],
+      "latent_image": ["6", 0]
+    },
+    "class_type": "KSampler",
+    "_meta": { "title": "KSampler (schnell: 4 steps, cfg 1)" }
+  },
+  "8": {
+    "inputs": { "samples": ["7", 0], "vae": ["3", 0] },
+    "class_type": "VAEDecode",
+    "_meta": { "title": "VAE Decode" }
+  },
+  "9": {
+    "inputs": { "filename_prefix": "slop_family_album", "images": ["8", 0] },
+    "class_type": "SaveImage",
+    "_meta": { "title": "Save Image" }
+  }
+}

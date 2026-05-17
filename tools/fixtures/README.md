@@ -13,23 +13,40 @@ generate-manifest → run-comfy → postprocess → write-exif
 ## Prerequisites
 
 - Node ≥ 20 (already required by the parent app).
-- A running [ComfyUI](https://github.com/comfyanonymous/ComfyUI) instance reachable at `http://127.0.0.1:8188` (configurable).
-- A ComfyUI workflow exported via *Save (API Format)* as `tools/fixtures/workflow.json` — leave it exactly as ComfyUI emits it. No editing required.
-- A sibling `tools/fixtures/workflow.overrides.json` that names which node IDs the runner should write per photo. Example:
+- A running [ComfyUI](https://github.com/comfyanonymous/ComfyUI) instance reachable at `http://127.0.0.1:8188` (configurable via `--host`).
+- Model weights matching the shipped `workflow.json`, which targets **FLUX.1-schnell (fp8)**:
 
-  ```json
-  {
-    "prompt": "6",
-    "negative": "7",
-    "seed": "31",
-    "width": "5",
-    "height": "5"
-  }
-  ```
+  | File                                  | Goes in ComfyUI's | Notes                          |
+  | ------------------------------------- | ----------------- | ------------------------------ |
+  | `flux1-schnell-fp8.safetensors`       | `models/unet/`    | Apache-2.0, 4-step sampler     |
+  | `clip_l.safetensors`                  | `models/clip/`    |                                |
+  | `t5xxl_fp8_e4m3fn_scaled.safetensors` | `models/clip/`    | fp8 variant fits on 12 GB VRAM |
+  | `ae.safetensors`                      | `models/vae/`     | FLUX autoencoder               |
 
-  Node IDs are the string keys in the API-format workflow JSON. Open `workflow.json`, find the relevant nodes (CLIPTextEncode for prompts, KSampler/RandomNoise for seed, EmptyLatentImage / EmptySD3LatentImage for dimensions), and copy their IDs.
+  If you already have FLUX wired up for slop-opera-factory, the same weights work — that project uses `flux1-dev-fp8.safetensors`; swap the filename in node `"1"` of `workflow.json` if you want to reuse dev instead of downloading schnell.
 
-  Any kind you omit is left untouched in the workflow — e.g. drop `negative` and the workflow's hardcoded negative prompt is used as-is. For `seed`, both `inputs.seed` and `inputs.noise_seed` are set so the override works on KSampler and RandomNoise samplers without ceremony.
+  Want SDXL or something else? Replace `workflow.json` with your own *Save (API Format)* export and update `workflow.overrides.json` to point at the right node IDs.
+
+## Workflow + overrides
+
+`workflow.json` is the raw API-format ComfyUI workflow — leave it untouched by hand-editing. `workflow.overrides.json` names which node IDs the runner overwrites per photo:
+
+```json
+{
+  "prompt": "4",
+  "seed": "7",
+  "width": "6",
+  "height": "6"
+}
+```
+
+- `prompt` → node `"4"` (`CLIPTextEncode`, positive). Writes `inputs.text`.
+- `seed` → node `"7"` (`KSampler`). Writes both `inputs.seed` and `inputs.noise_seed` so the same key works for KSampler and RandomNoise.
+- `width` / `height` → node `"6"` (`EmptySD3LatentImage`). Same node ID; the runner writes the two fields independently.
+
+`negative` is intentionally not wired: FLUX uses `ConditioningZeroOut` (node `"5"`) for the negative path and ignores text negatives. If you swap to SDXL, add a `CLIPTextEncode` for the negative branch in the workflow and wire `"negative"` → that node ID — the runner already understands the kind.
+
+Any kind you omit is left untouched in the workflow.
 
 ## Commands
 
