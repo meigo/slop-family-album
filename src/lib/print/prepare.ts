@@ -79,15 +79,16 @@ export async function exportPagesToPdf(opts: ExportOptions): Promise<string | nu
   });
 
   for (let i = 0; i < pageEls.length; i++) {
-    // modern-screenshot clones the DOM into an SVG <foreignObject> and
-    // lets the browser render it natively — that means every CSS feature
-    // (object-position, filter, SVG color matrices) is honored exactly
-    // as it appears on screen. html2canvas-pro's JS-side CSS reimpl
-    // silently dropped object-position + filter, which the v1 export did.
+    console.log(`[pdf-export] page ${i + 1}/${pageEls.length} starting…`);
+    const t0 = performance.now();
     const canvas = await domToCanvas(pageEls[i], {
       scale,
       backgroundColor: null,
+      timeout: 20000, // per-page hard cap; otherwise asset fetch can stall forever
+      progress: (cur, total) =>
+        console.log(`[pdf-export]   embedding asset ${cur}/${total}`),
     });
+    console.log(`[pdf-export] page ${i + 1} done in ${Math.round(performance.now() - t0)}ms (canvas ${canvas.width}×${canvas.height})`);
     const imgData = canvas.toDataURL('image/jpeg', jpegQuality);
     if (i > 0) pdf.addPage([paperWidthMm, paperHeightMm], orientation);
     pdf.addImage(imgData, 'JPEG', 0, 0, paperWidthMm, paperHeightMm, undefined, 'FAST');
