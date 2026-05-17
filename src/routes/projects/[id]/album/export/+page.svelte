@@ -4,6 +4,7 @@
   import { paperForAspect } from '$lib/print/sizes';
   import { exportPagesToPdf } from '$lib/print/prepare';
   import { Printer } from '@lucide/svelte';
+  import { convertFileSrc } from '@tauri-apps/api/core';
 
   let { data } = $props();
 
@@ -37,6 +38,14 @@
     try {
       const { w, h } = parseMm(paper.cssSize);
       const { scale, jpegQuality } = qualityToParams(quality);
+      // Build a lookup: the asset:// URL each <img> will use → original
+      // file path, so the renderer can ask Rust to read+encode quickly.
+      const imagePathMap = new Map<string, string>();
+      for (const page of data.pages) {
+        for (const slot of data.slotsByPage.get(page.id) ?? []) {
+          if (slot.path) imagePathMap.set(convertFileSrc(slot.path), slot.path);
+        }
+      }
       const path = await exportPagesToPdf({
         pageSelector: '.print-page',
         paperWidthMm: w,
@@ -44,6 +53,7 @@
         filename: `${data.project.name} — album`,
         scale,
         jpegQuality,
+        imagePathMap,
       });
       if (path) savedPath = path;
     } catch (e) {

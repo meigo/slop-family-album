@@ -27,7 +27,8 @@ pub fn run() {
       py_sidecar_port,
       crate::fs_ops::walk_image_dir,
       crate::fs_ops::hash_file,
-      crate::fs_ops::write_pdf
+      crate::fs_ops::write_pdf,
+      crate::fs_ops::read_image_data_url
     ])
     .setup(|app| {
       if cfg!(debug_assertions) {

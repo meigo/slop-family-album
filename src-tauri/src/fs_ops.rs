@@ -17,6 +17,30 @@ pub fn write_pdf(path: String, bytes: Vec<u8>) -> Result<(), String> {
     Ok(())
 }
 
+/// Read an image file from disk and return a base64 data URL. Used by
+/// the PDF export's fetchFn to skip modern-screenshot's slow JS-side
+/// fetch + base64 path. Rust reads + encodes ~10-20× faster.
+#[tauri::command]
+pub fn read_image_data_url(path: String) -> Result<String, String> {
+    use base64::engine::general_purpose::STANDARD as B64;
+    use base64::Engine;
+    let bytes = std::fs::read(&path).map_err(|e| format!("read {path}: {e}"))?;
+    let mime = match Path::new(&path)
+        .extension()
+        .and_then(|s| s.to_str())
+        .map(|s| s.to_ascii_lowercase())
+        .as_deref()
+    {
+        Some("png") => "image/png",
+        Some("webp") => "image/webp",
+        Some("gif") => "image/gif",
+        Some("heic") | Some("heif") => "image/heic",
+        _ => "image/jpeg",
+    };
+    let encoded = B64.encode(&bytes);
+    Ok(format!("data:{};base64,{}", mime, encoded))
+}
+
 #[derive(Serialize)]
 pub struct ScannedFile {
     pub path: String,

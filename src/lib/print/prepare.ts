@@ -42,6 +42,11 @@ export interface ExportOptions {
   scale?: number;
   /** JPEG quality 0..1. */
   jpegQuality?: number;
+  /** Map from asset:// URL (or whatever the renderer's <img> srcs point
+   *  at) to absolute file path. When provided, fetchFn routes those
+   *  reads through the `read_image_data_url` Tauri command — Rust does
+   *  the file IO + base64 encoding, much faster than JS fetch+btoa. */
+  imagePathMap?: Map<string, string>;
 }
 
 /**
@@ -61,7 +66,12 @@ export async function exportPagesToPdf(opts: ExportOptions): Promise<string | nu
     filename,
     scale = 2,
     jpegQuality = 0.92,
+    imagePathMap,
   } = opts;
+
+  // Cache: asset URL → data URL. Each photo is read at most once even if
+  // it appears on multiple pages.
+  const dataUrlCache = new Map<string, string>();
 
   const pageEls = Array.from(document.querySelectorAll(pageSelector)) as HTMLElement[];
   if (pageEls.length === 0) {
@@ -85,14 +95,25 @@ export async function exportPagesToPdf(opts: ExportOptions): Promise<string | nu
       scale,
       backgroundColor: null,
       timeout: 20000,
-      // modern-screenshot's default flow fetches every <img> via JS,
-      // base64-encodes it, and re-sets src to the giant data URL — slow
-      // and memory-heavy. Tauri's asset:// URLs are same-origin so the
-      // SVG -> canvas snapshot won't taint without the inline step.
-      // Returning the URL unchanged from fetchFn skips that round-trip
-      // entirely; the browser fetches the image natively when it renders
-      // the SVG <foreignObject>.
-      fetchFn: async (url) => url,
+      // Route asset URLs through the read_image_data_url Tauri command —
+      // Rust reads + base64-encodes the file ~10-20× faster than JS
+      // fetch + btoa. Cached so each photo is read at most once.
+      fetchFn: async (url) => {
+        const cached = dataUrlCache.get(url);
+        if (cached) return cached;
+        const path = imagePathMap?.get(url);
+        if (path) {
+          try {
+            const dataUrl = await invoke<string>('read_image_data_url', { path });
+            dataUrlCache.set(url, dataUrl);
+            return dataUrl;
+          } catch (e) {
+            console.warn('[pdf-export] read_image_data_url failed for', path, e);
+            return false;
+          }
+        }
+        return false;
+      },
       progress: (cur, total) =>
         console.log(`[pdf-export]   asset ${cur}/${total}`),
     });
