@@ -74,12 +74,20 @@ export async function autoBalancePageColors(args: {
     })
   );
 
-  // Target = mean of means.
-  const n = means.length;
+  // Target = per-channel median of the per-photo means. Median (vs.
+  // simple mean) resists outliers — a single wildly off-color photo
+  // can't drag the target with it.
+  const median = (values: number[]): number => {
+    const sorted = [...values].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 === 0
+      ? (sorted[mid - 1] + sorted[mid]) / 2
+      : sorted[mid];
+  };
   const target = {
-    r: means.reduce((a, m) => a + m.r, 0) / n,
-    g: means.reduce((a, m) => a + m.g, 0) / n,
-    b: means.reduce((a, m) => a + m.b, 0) / n,
+    r: median(means.map((m) => m.r)),
+    g: median(means.map((m) => m.g)),
+    b: median(means.map((m) => m.b)),
   };
   const targetLum = 0.299 * target.r + 0.587 * target.g + 0.114 * target.b;
   const targetRB = target.r - target.b;
