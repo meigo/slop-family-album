@@ -108,9 +108,8 @@
 
 <svelte:window onkeydown={(e) => { if (e.key === 'Escape') onClose(); }} />
 
-<!-- The editor anchor: positioned at (pos.x, pos.y), sized by content.
-     No outline, no resize handle, no drag bar — the text itself is the box.
-     The toolbar floats above and carries the drag handle on its left. -->
+<!-- The text anchor: positioned at (pos.x, pos.y), sized by content.
+     No outline, no resize handle, no drag bar — the text itself is the box. -->
 <div
   bind:this={wrapperEl}
   class="absolute"
@@ -123,8 +122,7 @@
     z-index: 5;
   "
 >
-  <!-- ContentEditable text. This is also the element whose rendered size
-       drives snap-edge calculations. -->
+  <!-- ContentEditable text. -->
   <div
     bind:this={editorEl}
     contenteditable="true"
@@ -136,15 +134,23 @@
       min-height: 1em;
     "
   ></div>
+</div>
 
-  <!-- Floating toolbar above the text. Drag handle on the left.
-       Anchors to the wrapper's left edge when text is in the left half of
-       the page; flips to the right edge when text is in the right half so
-       the toolbar never extends past the visible page. -->
-  <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div
-    class="toolbar"
-    style="position: absolute; bottom: 100%; {pos.x < 0.5 ? 'left: 0;' : 'right: 0;'} margin-bottom: 4px; z-index: var(--z-toolbar);"
+<!-- Floating toolbar positioned against the PAGE wrapper, not the text
+     wrapper. Bottom-anchored 4px above the text's top edge so it grows
+     UP when it wraps to multiple rows; max-width is bounded by the
+     available page space to the right of the text's left edge, so it
+     wraps cleanly when text is near the right edge. -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div
+  class="toolbar"
+  style="
+    position: absolute;
+    left: calc({pagePaddingPx}px + {pos.x} * (100% - {2 * pagePaddingPx}px));
+    bottom: calc(100% - {pagePaddingPx}px - {pos.y} * (100% - {2 * pagePaddingPx}px) + 4px);
+    max-width: calc({1 - pos.x} * (100% - {2 * pagePaddingPx}px));
+    z-index: var(--z-toolbar);
+  "
     onpointerdown={(e) => e.stopPropagation()}
   >
     <!-- Drag handle (a div, not a button, so it can capture pointer events
@@ -234,5 +240,4 @@
     <button type="button" class="toolbar-btn" title="Cancel (Esc)" onclick={onClose}>
       <X size={14} />
     </button>
-  </div>
 </div>
