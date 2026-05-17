@@ -30,7 +30,9 @@ Local-first desktop app for building printed family photo albums and seasonal-me
 
 **Phase 4d (Page + text backgrounds) — complete.** Per-project page background color (default white) — applies to every page in album and calendar. Per-text overlay background fill with adjustable padding — toggle on, pick a color, set the padding, useful for readable captions over photos.
 
-Phase 4e (PDF export) and LLM-generated captions — planned but not yet implemented.
+**Phase 4e (PDF export) — complete.** Per-kind export routes (`/album/export`, `/calendar/export`) stack every page at the chosen paper size; "Save as PDF" awaits font + image readiness, then triggers the browser's print dialog. Album: A4-square / Letter-square. Calendar: A4-landscape / Letter-landscape. Vector text, raster photos, sRGB.
+
+LLM-generated captions — planned but not yet implemented.
 
 See `docs/superpowers/specs/2026-05-14-family-album-builder-design.md` for the design.
 

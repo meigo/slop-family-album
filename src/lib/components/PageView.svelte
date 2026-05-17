@@ -48,8 +48,11 @@
     onEditText?: (textId: number) => void;
     /** Page background color (hex #rrggbb). Default white. */
     pageBgColor?: string;
+    /** When true, suppress all interactive chrome (hover icons, click
+     *  overlay, border) so the page renders as it should appear in print. */
+    printMode?: boolean;
   }
-  let { templateId, slots, onSlotClick, onSwapPhoto, onAdjustCrop, onRemovePhoto, editingSlotIndex = null, slotGapPx = 2, pagePaddingPx = 0, pageTitle = null, events = [], weekStart = 1, texts = [], editingTextId = null, onEditText, pageBgColor = '#ffffff' }: Props = $props();
+  let { templateId, slots, onSlotClick, onSwapPhoto, onAdjustCrop, onRemovePhoto, editingSlotIndex = null, slotGapPx = 2, pagePaddingPx = 0, pageTitle = null, events = [], weekStart = 1, texts = [], editingTextId = null, onEditText, pageBgColor = '#ffffff', printMode = false }: Props = $props();
 
   let tpl = $derived<Template>(getTemplate(templateId));
   let aspectRatio = $derived(tpl.aspect === 'square' ? '1 / 1' : '4 / 3');
@@ -73,7 +76,7 @@
 
 <div
   class="relative w-full surface-card p-0 overflow-hidden"
-  style="aspect-ratio: {aspectRatio}; border: 1px solid var(--color-line); background: {pageBgColor};"
+  style="aspect-ratio: {aspectRatio}; border: {printMode ? 'none' : '1px solid var(--color-line)'}; background: {pageBgColor};"
 >
   {#each tpl.slots as slotLayout, i}
     {@const slot = orderedSlots[i]}
@@ -109,7 +112,7 @@
           </div>
         {/if}
 
-        {#if !isEditing}
+        {#if !isEditing && !printMode}
           {#if onSlotClick}
             <button
               type="button"

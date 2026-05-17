@@ -137,8 +137,9 @@
     <p class="text-sm mt-2" style="color: var(--color-muted)">
       {data.pages.length} pages · click any photo to swap, use the dropdown to change layout
     </p>
-    <p class="text-sm mt-1">
+    <p class="text-sm mt-1 flex gap-3">
       <a class="btn-ghost" href={`/projects/${data.project.id}/album/sorter`}>open sorter view →</a>
+      <a class="btn-ghost" href={`/projects/${data.project.id}/album/export`}>export PDF →</a>
     </p>
     <label class="text-sm mt-2 flex items-center gap-2" style="color: var(--color-muted)">
       gap between images:

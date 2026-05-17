@@ -121,6 +121,7 @@
     <div class="flex flex-wrap gap-2 mt-3">
       {#if data.albumSelection}
         <a class="btn-primary" href={`/projects/${data.project.id}/album/review`}>Open album</a>
+        <a class="btn-secondary" href={`/projects/${data.project.id}/album/export`} title="Save the album as a PDF">Export album PDF</a>
         <button type="button" class="btn-secondary" onclick={runGenerateAlbum} disabled={generating !== null} title="Discard edits and rebuild from current scoring">
           {generating === 'album' ? 'Regenerating album…' : 'Regenerate album'}
         </button>
@@ -131,6 +132,7 @@
       {/if}
       {#if data.calendarSelection}
         <a class="btn-primary" href={`/projects/${data.project.id}/calendar/review`}>Open calendar</a>
+        <a class="btn-secondary" href={`/projects/${data.project.id}/calendar/export`} title="Save the calendar as a PDF">Export calendar PDF</a>
         <button type="button" class="btn-secondary" onclick={runGenerateCalendar} disabled={generating !== null} title="Discard edits and rebuild from current scoring">
           {generating === 'calendar' ? 'Regenerating calendar…' : 'Regenerate calendar'}
         </button>
