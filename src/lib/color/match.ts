@@ -66,12 +66,33 @@ export async function autoBalancePageColors(args: {
   const refIndex = valid.findIndex((s) => s.slot_index === args.referenceSlotIndex);
   if (refIndex < 0) return 0;
 
-  // Analyze every slot via its cached thumbnail.
+  // Pick the largest face bbox (if any) for each slot. Face regions
+  // give a much more useful color signal than the whole frame — they
+  // isolate consistent skin-tone subjects from variable backgrounds.
+  function largestFaceBbox(slot: SlotForMatch) {
+    if (slot.faces.length === 0) return null;
+    if (slot.photo_width === null || slot.photo_height === null) return null;
+    const f = slot.faces.reduce((a, b) =>
+      a.bbox_w * a.bbox_h >= b.bbox_w * b.bbox_h ? a : b
+    );
+    return {
+      bbox_x: f.bbox_x,
+      bbox_y: f.bbox_y,
+      bbox_w: f.bbox_w,
+      bbox_h: f.bbox_h,
+      imgWidth: slot.photo_width,
+      imgHeight: slot.photo_height,
+    };
+  }
+
+  // Analyze every slot. Use the face region when available; fall back
+  // to the full thumbnail when a slot has no detected face.
   const stats = await Promise.all(
     valid.map(async (s) => {
+      const bbox = largestFaceBbox(s);
       const src = convertFileSrc(s.thumb_path ?? s.path!);
       try {
-        return await analyzeImageColor(src);
+        return await analyzeImageColor(src, bbox);
       } catch {
         return { r: 128, g: 128, b: 128, chroma: 0 };
       }
