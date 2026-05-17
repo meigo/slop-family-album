@@ -36,8 +36,9 @@ export interface ExportOptions {
   paperHeightMm: number;
   /** Suggested filename (without .pdf extension). */
   filename: string;
-  /** Rasterization scale relative to the on-screen size. 2-3 gives a
-   *  good balance of sharpness and file size for A4 print. */
+  /** Rasterization scale relative to the on-screen size. Default 4 —
+   *  text stays crisp at A4 print size; trade-off is larger file +
+   *  more memory during capture. */
   scale?: number;
   /** JPEG quality 0..1. */
   jpegQuality?: number;
@@ -58,7 +59,7 @@ export async function exportPagesToPdf(opts: ExportOptions): Promise<string | nu
     paperWidthMm,
     paperHeightMm,
     filename,
-    scale = 2,
+    scale = 4,
     jpegQuality = 0.92,
   } = opts;
 
