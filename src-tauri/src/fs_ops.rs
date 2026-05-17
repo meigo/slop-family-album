@@ -1,11 +1,21 @@
 use serde::Serialize;
 use sha2::{Digest, Sha256};
 use std::fs::File;
-use std::io::{BufReader, Read};
+use std::io::{BufReader, Read, Write};
 use std::path::Path;
 use walkdir::WalkDir;
 
 const EXTENSIONS: &[&str] = &["jpg", "jpeg", "png", "heic", "heif", "webp"];
+
+/// Write a byte array to an absolute path. Used by the PDF export to
+/// persist the jsPDF output after the user picks a destination via the
+/// save dialog.
+#[tauri::command]
+pub fn write_pdf(path: String, bytes: Vec<u8>) -> Result<(), String> {
+    let mut f = File::create(&path).map_err(|e| format!("create {path}: {e}"))?;
+    f.write_all(&bytes).map_err(|e| format!("write {path}: {e}"))?;
+    Ok(())
+}
 
 #[derive(Serialize)]
 pub struct ScannedFile {

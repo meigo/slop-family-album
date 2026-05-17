@@ -2,12 +2,14 @@
   import PageHeader from '$lib/components/PageHeader.svelte';
   import PageView from '$lib/components/PageView.svelte';
   import { paperForAspect } from '$lib/print/sizes';
-  import { printWhenReady } from '$lib/print/prepare';
+  import { exportPagesToPdf } from '$lib/print/prepare';
   import { Printer } from '@lucide/svelte';
 
   let { data } = $props();
 
-  let printing = $state(false);
+  let exporting = $state(false);
+  let savedPath = $state<string | null>(null);
+  let error = $state<string | null>(null);
   let paper = $derived(paperForAspect(data.project.page_aspect));
   let pageAspect = $derived<'landscape' | 'portrait' | 'square' | null>(
     (data.project.page_aspect === 'landscape' || data.project.page_aspect === 'portrait' || data.project.page_aspect === 'square')
@@ -15,21 +17,35 @@
       : null
   );
 
+  function parseMm(cssSize: string): { w: number; h: number } {
+    const m = /^([0-9.]+)mm\s+([0-9.]+)mm$/.exec(cssSize);
+    if (!m) return { w: 297, h: 210 };
+    return { w: Number(m[1]), h: Number(m[2]) };
+  }
+
   async function exportPdf() {
-    printing = true;
+    exporting = true;
+    savedPath = null;
+    error = null;
     try {
-      await printWhenReady();
+      const { w, h } = parseMm(paper.cssSize);
+      const path = await exportPagesToPdf({
+        pageSelector: '.print-page',
+        paperWidthMm: w,
+        paperHeightMm: h,
+        filename: `${data.project.name} — album`,
+      });
+      if (path) savedPath = path;
+    } catch (e) {
+      error = e instanceof Error ? e.message : String(e);
     } finally {
-      printing = false;
+      exporting = false;
     }
   }
 </script>
 
 <svelte:head>
   <title>{data.project.name} — album</title>
-  <!-- @page must live in <head> as part of the initial document; WKWebView
-       ignores @page rules injected via JS after page load. -->
-  {@html `<style>@media print { @page { size: ${paper.cssSize}; margin: 0; } }</style>`}
 </svelte:head>
 
 <div class="container-page print-hide" style="max-width: 1000px;">
@@ -46,13 +62,23 @@
       <span class="text-sm" style="color: var(--color-muted)">
         Paper: A4 {data.project.page_aspect ?? 'landscape (default)'}. Change the page format on the album review page.
       </span>
-      <button type="button" class="btn-primary flex items-center gap-2" style="width: auto; margin-left: auto;" onclick={exportPdf} disabled={printing}>
+      <button type="button" class="btn-primary flex items-center gap-2" style="width: auto; margin-left: auto;" onclick={exportPdf} disabled={exporting}>
         <Printer size={16} />
-        {printing ? 'Preparing…' : 'Save as PDF'}
+        {exporting ? 'Generating PDF…' : 'Save as PDF'}
       </button>
       <p class="text-sm" style="color: var(--color-muted); flex: 1; min-width: 100%;">
-        Click "Save as PDF" → choose "Save as PDF" as the destination in the print dialog.
+        Generates the PDF directly — no print dialog. You'll be asked where to save the file.
       </p>
+      {#if savedPath}
+        <p class="text-sm" style="color: var(--color-success); flex: 1; min-width: 100%;">
+          Saved to {savedPath}
+        </p>
+      {/if}
+      {#if error}
+        <p class="text-sm" style="color: var(--color-danger); flex: 1; min-width: 100%;">
+          Failed: {error}
+        </p>
+      {/if}
     </section>
   {/if}
 </div>

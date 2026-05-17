@@ -32,6 +32,8 @@
 		"@fontsource/ibm-plex-mono": "^5.2.7",
 		"@lucide/svelte": "^1.16.0",
 		"@tauri-apps/plugin-dialog": "^2.7.1",
-		"@tauri-apps/plugin-sql": "^2.4.0"
+		"@tauri-apps/plugin-sql": "^2.4.0",
+		"html2canvas-pro": "^2.0.2",
+		"jspdf": "^4.2.1"
 	}
 }
