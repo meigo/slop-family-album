@@ -4,7 +4,9 @@
  * Downscale to 64×64 → 4096 pixels per photo, fast enough to run on
  * dozens of photos without blocking.
  */
-export async function analyzeImageColor(url: string): Promise<{ r: number; g: number; b: number }> {
+export async function analyzeImageColor(
+  url: string,
+): Promise<{ r: number; g: number; b: number; chroma: number }> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
@@ -25,13 +27,18 @@ export async function analyzeImageColor(url: string): Promise<{ r: number; g: nu
         let r = 0;
         let g = 0;
         let b = 0;
+        let chromaSum = 0; // per-pixel (max-min); proxy for HSV saturation
         const n = w * h;
         for (let i = 0; i < data.length; i += 4) {
-          r += data[i];
-          g += data[i + 1];
-          b += data[i + 2];
+          const dr = data[i];
+          const dg = data[i + 1];
+          const db = data[i + 2];
+          r += dr;
+          g += dg;
+          b += db;
+          chromaSum += Math.max(dr, dg, db) - Math.min(dr, dg, db);
         }
-        resolve({ r: r / n, g: g / n, b: b / n });
+        resolve({ r: r / n, g: g / n, b: b / n, chroma: chromaSum / n });
       } catch (e) {
         reject(e);
       }

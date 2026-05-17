@@ -67,18 +67,18 @@ export async function autoBalancePageColors(args: {
   if (refIndex < 0) return 0;
 
   // Analyze every slot via its cached thumbnail.
-  const means = await Promise.all(
+  const stats = await Promise.all(
     valid.map(async (s) => {
       const src = convertFileSrc(s.thumb_path ?? s.path!);
       try {
         return await analyzeImageColor(src);
       } catch {
-        return { r: 128, g: 128, b: 128 };
+        return { r: 128, g: 128, b: 128, chroma: 0 };
       }
     })
   );
 
-  const target = means[refIndex];
+  const target = stats[refIndex];
   const targetLum = 0.299 * target.r + 0.587 * target.g + 0.114 * target.b;
   const targetRB = target.r - target.b;
 
@@ -89,20 +89,28 @@ export async function autoBalancePageColors(args: {
 
     let warmth: number;
     let brightness: number;
+    let saturation: number;
     if (i === refIndex) {
       // Reference: reset its color adjustments to identity.
       warmth = 0;
       brightness = 1;
+      saturation = 1;
     } else {
-      const cur = means[i];
+      const cur = stats[i];
       const curLum = 0.299 * cur.r + 0.587 * cur.g + 0.114 * cur.b;
       const curRB = cur.r - cur.b;
-      warmth = clamp((targetRB - curRB) / 80, -1, 1);
+      // The SVG color matrix applies ~k*(R+B) shift per unit of warmth
+      // (k=0.25). For a typical mid-tone (R+B ≈ 250), one unit shifts
+      // (R-B) by ~62. So divide the delta by 62 to land at the target.
+      warmth = clamp((targetRB - curRB) / 62, -1, 1);
       brightness = clamp(targetLum / Math.max(curLum, 1), 0.7, 1.4);
+      // Saturation: match average chroma. Photos with a dull tone get a
+      // multiplier > 1; an over-saturated one gets < 1.
+      saturation = clamp(target.chroma / Math.max(cur.chroma, 1), 0.6, 1.8);
       adjusted++;
     }
 
-    const updated: SlotTransform = { ...base, warmth, brightness };
+    const updated: SlotTransform = { ...base, warmth, brightness, saturation };
     await updateSlotTransform(args.pageId, slot.slot_index, serializeTransform(updated));
   }
 
