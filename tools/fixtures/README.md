@@ -13,17 +13,17 @@ generate-manifest → run-comfy → postprocess → write-exif
 ## Prerequisites
 
 - Node ≥ 20 (already required by the parent app).
-- A running [ComfyUI](https://github.com/comfyanonymous/ComfyUI) instance reachable at `http://127.0.0.1:8188` (configurable via `--host`).
-- Model weights matching the shipped `workflow.json`, which targets **FLUX.1-schnell (fp8)**:
+- A running [ComfyUI](https://github.com/comfyanonymous/ComfyUI) instance reachable at `http://127.0.0.1:8000` (configurable via `--host`). The default matches the port slop-opera-factory uses on this workstation; vanilla ComfyUI launches on `8188`, so override `--host` if yours is on the upstream default.
+- Model weights matching the shipped `workflow.json`, which targets **FLUX.1-dev (fp8)** — same weights slop-opera-factory uses:
 
-  | File                                  | Goes in ComfyUI's | Notes                          |
-  | ------------------------------------- | ----------------- | ------------------------------ |
-  | `flux1-schnell-fp8.safetensors`       | `models/unet/`    | Apache-2.0, 4-step sampler     |
-  | `clip_l.safetensors`                  | `models/clip/`    |                                |
-  | `t5xxl_fp8_e4m3fn_scaled.safetensors` | `models/clip/`    | fp8 variant fits on 12 GB VRAM |
-  | `ae.safetensors`                      | `models/vae/`     | FLUX autoencoder               |
+  | File                                  | Goes in ComfyUI's              | Notes                          |
+  | ------------------------------------- | ------------------------------ | ------------------------------ |
+  | `flux1-dev-fp8.safetensors`           | `models/diffusion_models/`     | 12-step sampler                |
+  | `clip_l.safetensors`                  | `models/clip/` or `text_encoders/` |                            |
+  | `t5xxl_fp8_e4m3fn_scaled.safetensors` | `models/clip/` or `text_encoders/` | fp8 variant fits on 12 GB VRAM |
+  | `ae.safetensors`                      | `models/vae/`                  | FLUX autoencoder               |
 
-  If you already have FLUX wired up for slop-opera-factory, the same weights work — that project uses `flux1-dev-fp8.safetensors`; swap the filename in node `"1"` of `workflow.json` if you want to reuse dev instead of downloading schnell.
+  Want FLUX-schnell (Apache-2.0, 4 steps) instead? Change node `"1"`'s `unet_name` to `flux1-schnell-fp8.safetensors` and drop node `"7"`'s `steps` from 12 to 4.
 
   Want SDXL or something else? Replace `workflow.json` with your own *Save (API Format)* export and update `workflow.overrides.json` to point at the right node IDs.
 
@@ -54,7 +54,7 @@ Run from `tools/fixtures/`:
 
 ```bash
 # 1. Generate the manifest (deterministic, seeded)
-npm run manifest -- --year 2025 --count 300 --seed 1 --name family-2025
+npm run manifest -- --year 2025 --count 80 --seed 1 --name family-2025
 
 # 2. Render via ComfyUI → raw PNGs
 npm run comfy -- --manifest manifests/family-2025.json --workflow workflow.json --overrides workflow.overrides.json --out ../../sample-albums/family-2025/raw

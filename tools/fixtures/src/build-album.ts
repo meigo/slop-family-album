@@ -8,7 +8,7 @@ const { values } = parseArgs({
     workflow: { type: "string", default: "workflow.json" },
     overrides: { type: "string", default: "workflow.overrides.json" },
     out: { type: "string" },
-    host: { type: "string", default: "http://127.0.0.1:8188" },
+    host: { type: "string", default: "http://127.0.0.1:8000" },
     concurrency: { type: "string", default: "1" },
     skipComfy: { type: "boolean", default: false },
   },

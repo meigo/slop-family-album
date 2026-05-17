@@ -1,7 +1,7 @@
 {
   "1": {
     "inputs": {
-      "unet_name": "flux1-schnell-fp8.safetensors",
+      "unet_name": "flux1-dev-fp8.safetensors",
       "weight_dtype": "default"
     },
     "class_type": "UNETLoader",
@@ -43,7 +43,7 @@
   "7": {
     "inputs": {
       "seed": 0,
-      "steps": 4,
+      "steps": 12,
       "cfg": 1,
       "sampler_name": "euler",
       "scheduler": "simple",
@@ -54,7 +54,7 @@
       "latent_image": ["6", 0]
     },
     "class_type": "KSampler",
-    "_meta": { "title": "KSampler (schnell: 4 steps, cfg 1)" }
+    "_meta": { "title": "KSampler (FLUX-dev: 12 steps, cfg 1)" }
   },
   "8": {
     "inputs": { "samples": ["7", 0], "vae": ["3", 0] },
