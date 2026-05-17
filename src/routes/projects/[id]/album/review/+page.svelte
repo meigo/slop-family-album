@@ -8,6 +8,8 @@
   import { getTemplate } from '$lib/layout/templates';
   import { invalidateAll } from '$app/navigation';
   import { updateSlotPhoto, clearSlotPhoto, insertBlankPage, updateProjectSlotGap, updateProjectPagePadding, updateProjectPageBgColor, updateProjectPageAspect, addPageText } from '$lib/db';
+  import { autoBalancePageColors } from '$lib/color/match';
+  import { Wand2 } from '@lucide/svelte';
   import { DEFAULT_TEXT_STYLE, serializeStyle } from '$lib/text/style';
 
   let { data } = $props();
@@ -116,6 +118,19 @@
     editingTextId = { pageId, textId };
   }
 
+  let balancing = $state<number | null>(null);
+
+  async function autoBalance(pageId: number, templateId: string) {
+    balancing = pageId;
+    try {
+      const slots = data.slotsByPage.get(pageId) ?? [];
+      await autoBalancePageColors({ pageId, templateId, slots });
+      await invalidateAll();
+    } finally {
+      balancing = null;
+    }
+  }
+
   async function addText(pageId: number) {
     const id = await addPageText({
       page_id: pageId,
@@ -192,6 +207,17 @@
               Page {idx + 1}{page.title ? ` · ${page.title}` : ''}
             </h2>
             <div class="flex items-center gap-2">
+              <button
+                type="button"
+                class="btn-secondary flex items-center gap-1"
+                style="font-size: 0.75rem; padding: 0.25rem 0.5rem;"
+                title="Match colors across photos on this page (analyze + adjust warmth + brightness)"
+                onclick={() => autoBalance(page.id, page.template_id)}
+                disabled={balancing !== null}
+              >
+                <Wand2 size={12} />
+                {balancing === page.id ? 'Balancing…' : 'Auto-balance'}
+              </button>
               <button
                 type="button"
                 class="btn-secondary"
