@@ -19,7 +19,10 @@ if (!values.out) throw new Error("--out is required");
 
 const manifest = resolve(values.manifest);
 const outDir = resolve(values.out);
-const rawDir = `${outDir}/raw`;
+// Raw ComfyUI PNGs go to a sibling folder, not inside outDir. Otherwise the
+// app under test (pointed at outDir) would recurse into raw/ and index the
+// EXIF-less PNGs as a stray failure-case dataset.
+const rawDir = `${outDir}-raw`;
 
 function run(cmd: string, args: string[]): Promise<void> {
   return new Promise((resolveP, rejectP) => {

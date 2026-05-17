@@ -12,6 +12,8 @@ generate-manifest → run-comfy → postprocess → write-exif
 
 Output is a single flat folder of JPEGs — same as what a phone import dumps. The app under test reads EXIF and organizes from there; pre-sorting into `YYYY/MM/` would defeat the test.
 
+`build-album` also writes the raw ComfyUI PNGs to a *sibling* `<out>-raw/` folder (not inside `<out>/`) so pointing the app at `<out>/` won't pull in EXIF-less PNGs. The raw cache is kept so you can re-run postprocess (different JPEG quality, different mess effects) without re-rendering — re-rendering 80 photos is ~40 min, re-postprocessing is seconds.
+
 ## Prerequisites
 
 - Node ≥ 20 (already required by the parent app).
@@ -58,11 +60,11 @@ Run from `tools/fixtures/`:
 # 1. Generate the manifest (deterministic, seeded)
 npm run manifest -- --year 2025 --count 80 --seed 1 --name family-2025
 
-# 2. Render via ComfyUI → raw PNGs
-npm run comfy -- --manifest manifests/family-2025.json --workflow workflow.json --overrides workflow.overrides.json --out ../../sample-albums/family-2025/raw
+# 2. Render via ComfyUI → raw PNGs (kept as a sibling, not inside the album folder)
+npm run comfy -- --manifest manifests/family-2025.json --workflow workflow.json --overrides workflow.overrides.json --out ../../sample-albums/family-2025-raw
 
 # 3. Sharp pass: JPEG re-encode + quality effects → flat folder of JPEGs
-npm run postprocess -- --manifest manifests/family-2025.json --raw ../../sample-albums/family-2025/raw --out ../../sample-albums/family-2025
+npm run postprocess -- --manifest manifests/family-2025.json --raw ../../sample-albums/family-2025-raw --out ../../sample-albums/family-2025
 
 # 4. Write camera-style EXIF onto the JPEGs
 npm run exif -- --manifest manifests/family-2025.json --album ../../sample-albums/family-2025
