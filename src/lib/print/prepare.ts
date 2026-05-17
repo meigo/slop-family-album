@@ -133,6 +133,10 @@ export async function exportPagesToPdf(opts: ExportOptions): Promise<string | nu
     const imgData = canvas.toDataURL('image/jpeg', jpegQuality);
     if (i > 0) pdf.addPage([paperWidthMm, paperHeightMm], orientation);
     pdf.addImage(imgData, 'JPEG', 0, 0, paperWidthMm, paperHeightMm, undefined, 'FAST');
+    // Yield to the browser between pages so accumulated sandbox iframes,
+    // image decoders, and SVG parser state can release. Without this,
+    // pages 3+ stall for tens of seconds while the renderer thrashes.
+    await new Promise((r) => setTimeout(r, 100));
   }
 
   const path = await save({
