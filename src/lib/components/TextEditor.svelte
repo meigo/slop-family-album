@@ -137,11 +137,14 @@
     "
   ></div>
 
-  <!-- Floating toolbar above the text. Drag handle on the left. -->
+  <!-- Floating toolbar above the text. Drag handle on the left.
+       Anchors to the wrapper's left edge when text is in the left half of
+       the page; flips to the right edge when text is in the right half so
+       the toolbar never extends past the visible page. -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     class="toolbar"
-    style="position: absolute; bottom: 100%; left: 0; margin-bottom: 4px; z-index: var(--z-toolbar);"
+    style="position: absolute; bottom: 100%; {pos.x < 0.5 ? 'left: 0;' : 'right: 0;'} margin-bottom: 4px; z-index: var(--z-toolbar);"
     onpointerdown={(e) => e.stopPropagation()}
   >
     <!-- Drag handle (a div, not a button, so it can capture pointer events
