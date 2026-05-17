@@ -2,7 +2,7 @@
   import PageHeader from '$lib/components/PageHeader.svelte';
   import PageView from '$lib/components/PageView.svelte';
   import { paperForAspect } from '$lib/print/sizes';
-  import { printWhenReady, setPrintPageSize } from '$lib/print/prepare';
+  import { printWhenReady } from '$lib/print/prepare';
   import { Printer } from '@lucide/svelte';
 
   let { data } = $props();
@@ -18,7 +18,6 @@
   async function exportPdf() {
     printing = true;
     try {
-      setPrintPageSize(paper.cssSize);
       await printWhenReady();
     } finally {
       printing = false;
@@ -28,6 +27,7 @@
 
 <svelte:head>
   <title>{data.project.name} — calendar</title>
+  {@html `<style>@media print { @page { size: ${paper.cssSize}; margin: 0; } }</style>`}
 </svelte:head>
 
 <div class="container-page print-hide" style="max-width: 1000px;">
