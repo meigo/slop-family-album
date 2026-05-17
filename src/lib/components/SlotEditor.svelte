@@ -130,33 +130,43 @@
     onwheel={(e) => e.stopPropagation()}
   >
     <div class="toolbar-row">
-      <label class="toolbar-row" title="Brightness — 1 is unchanged">
-        <SunMedium size={14} />
-        <input type="range" min="0.5" max="1.5" step="0.01" bind:value={t.brightness} style="width: 70px;" />
-      </label>
-      <label class="toolbar-row" title="Contrast — 1 is unchanged">
-        <Contrast size={14} />
-        <input type="range" min="0.5" max="1.5" step="0.01" bind:value={t.contrast} style="width: 70px;" />
-      </label>
-      <label class="toolbar-row" title="Saturation — 1 is unchanged">
-        <Droplets size={14} />
-        <input type="range" min="0" max="2" step="0.01" bind:value={t.saturation} style="width: 70px;" />
-      </label>
-      <label class="toolbar-row" title="Warmth — negative = cooler (blue), positive = warmer (orange). For matching photos with different white balance.">
-        <Thermometer size={14} />
-        <input type="range" min="-1" max="1" step="0.01" bind:value={t.warmth} style="width: 70px;" />
-      </label>
-      <label class="toolbar-row" title="Tint — negative = magenta, positive = green">
-        <Palette size={14} />
-        <input type="range" min="-1" max="1" step="0.01" bind:value={t.tint} style="width: 70px;" />
-      </label>
+      <div class="toolbar-row" title="Brightness — click icon to reset">
+        <button type="button" class="toolbar-icon-btn" onclick={() => t.brightness = 1} title="Reset brightness" aria-label="Reset brightness">
+          <SunMedium size={14} />
+        </button>
+        <input type="range" min="0.5" max="1.5" step="0.01" bind:value={t.brightness} aria-label="Brightness" style="width: 70px;" />
+      </div>
+      <div class="toolbar-row" title="Contrast — click icon to reset">
+        <button type="button" class="toolbar-icon-btn" onclick={() => t.contrast = 1} title="Reset contrast" aria-label="Reset contrast">
+          <Contrast size={14} />
+        </button>
+        <input type="range" min="0.5" max="1.5" step="0.01" bind:value={t.contrast} aria-label="Contrast" style="width: 70px;" />
+      </div>
+      <div class="toolbar-row" title="Saturation — click icon to reset">
+        <button type="button" class="toolbar-icon-btn" onclick={() => t.saturation = 1} title="Reset saturation" aria-label="Reset saturation">
+          <Droplets size={14} />
+        </button>
+        <input type="range" min="0" max="2" step="0.01" bind:value={t.saturation} aria-label="Saturation" style="width: 70px;" />
+      </div>
+      <div class="toolbar-row" title="Warmth — click icon to reset. Negative = cooler (blue), positive = warmer (orange).">
+        <button type="button" class="toolbar-icon-btn" onclick={() => t.warmth = 0} title="Reset warmth" aria-label="Reset warmth">
+          <Thermometer size={14} />
+        </button>
+        <input type="range" min="-1" max="1" step="0.01" bind:value={t.warmth} aria-label="Warmth" style="width: 70px;" />
+      </div>
+      <div class="toolbar-row" title="Tint — click icon to reset. Negative = magenta, positive = green.">
+        <button type="button" class="toolbar-icon-btn" onclick={() => t.tint = 0} title="Reset tint" aria-label="Reset tint">
+          <Palette size={14} />
+        </button>
+        <input type="range" min="-1" max="1" step="0.01" bind:value={t.tint} aria-label="Tint" style="width: 70px;" />
+      </div>
       <button
         type="button"
         class="toolbar-btn"
-        title="Reset image adjustments"
+        title="Reset all image adjustments"
         onclick={() => { t.brightness = 1; t.contrast = 1; t.saturation = 1; t.warmth = 0; t.tint = 0; }}
       >
-        <RotateCcw size={12} /> adj
+        <RotateCcw size={12} /> all
       </button>
     </div>
     <div class="toolbar-row">
