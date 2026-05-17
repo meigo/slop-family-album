@@ -59,7 +59,7 @@ export async function exportPagesToPdf(opts: ExportOptions): Promise<string | nu
     paperWidthMm,
     paperHeightMm,
     filename,
-    scale = 4,
+    scale = 2,
     jpegQuality = 0.92,
   } = opts;
 

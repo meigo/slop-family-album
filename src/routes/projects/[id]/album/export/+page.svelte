@@ -14,9 +14,9 @@
   let paper = $derived(paperForAspect(data.project.page_aspect));
 
   function qualityToParams(q: 'low' | 'medium' | 'high'): { scale: number; jpegQuality: number } {
-    if (q === 'low')  return { scale: 2, jpegQuality: 0.85 };
-    if (q === 'high') return { scale: 5, jpegQuality: 0.98 };
-    return { scale: 4, jpegQuality: 0.92 };
+    if (q === 'low')  return { scale: 1.5, jpegQuality: 0.85 };
+    if (q === 'high') return { scale: 3, jpegQuality: 0.96 };
+    return { scale: 2, jpegQuality: 0.92 };
   }
   let pageAspect = $derived<'landscape' | 'portrait' | 'square' | null>(
     (data.project.page_aspect === 'landscape' || data.project.page_aspect === 'portrait' || data.project.page_aspect === 'square')
@@ -75,9 +75,9 @@
       <label class="text-sm flex items-center gap-2">
         Quality:
         <select bind:value={quality} class="input-base" style="padding: 0.25rem 0.5rem; width: auto;">
-          <option value="low">Low (~150 DPI, smaller file)</option>
-          <option value="medium">Medium (~340 DPI)</option>
-          <option value="high">High (~430 DPI, larger file)</option>
+          <option value="low">Low (~130 DPI, fastest)</option>
+          <option value="medium">Medium (~170 DPI)</option>
+          <option value="high">High (~255 DPI, slower)</option>
         </select>
       </label>
       <button type="button" class="btn-primary flex items-center gap-2" style="width: auto; margin-left: auto;" onclick={exportPdf} disabled={exporting}>
