@@ -34,20 +34,22 @@
   {#if tpl.calendarGrid}
     {@const gridIsTall = tpl.calendarGrid.h > tpl.calendarGrid.w}
     {@const lineCount = gridIsTall ? 6 : 3}
+    <!-- Inset the calendar block by 10% inside its bbox so the text lines
+         and the photo blocks read as distinct elements with breathing
+         room between them. Without the inset, lines and blocks touch
+         and the icon looks crowded. -->
     <div
       class="absolute"
       style="
-        left: {tpl.calendarGrid.x * 100}%;
-        top: {tpl.calendarGrid.y * 100}%;
-        width: {tpl.calendarGrid.w * 100}%;
-        height: {tpl.calendarGrid.h * 100}%;
-        outline: 1px solid var(--color-surface);
-        outline-offset: -1px;
+        left: calc({tpl.calendarGrid.x * 100}% + 10%);
+        top: calc({tpl.calendarGrid.y * 100}% + 10%);
+        width: calc({tpl.calendarGrid.w * 100}% - 20%);
+        height: calc({tpl.calendarGrid.h * 100}% - 20%);
       "
     >
       {#each Array(lineCount) as _, i}
         {@const pct = (i / (lineCount - 1)) * 100}
-        <div style="position: absolute; left: 0; right: 0; top: {pct}%; height: 1px; background: var(--color-muted); opacity: 0.7; transform: translateY({i === lineCount - 1 ? '-1px' : '0'});"></div>
+        <div style="position: absolute; left: 0; right: 0; top: {pct}%; height: 1px; background: var(--color-muted); opacity: 0.8;"></div>
       {/each}
     </div>
   {/if}
