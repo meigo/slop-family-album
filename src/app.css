@@ -225,6 +225,48 @@ button:not(:disabled) {
 }
 .toolbar-icon-btn:hover { background: var(--toolbar-active); }
 
+/* Collapsible settings panels on the review pages. Native <details>
+   with a styled summary as the header and a small indented body. */
+.settings-section {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+}
+.settings-section > summary {
+  cursor: pointer;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  user-select: none;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.settings-section > summary::before {
+  content: '▸';
+  font-size: 0.7em;
+  color: var(--color-muted);
+  transition: transform 0.15s ease-out;
+}
+.settings-section[open] > summary::before {
+  transform: rotate(90deg);
+}
+.settings-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2) 0 var(--space-1) var(--space-3);
+}
+.settings-select {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  padding: 2px 6px;
+  font-size: 0.75rem;
+  color: var(--color-fg);
+}
+
 /* Hover-action icons on photo slots (swap/adjust/remove). Same dark pill
    as the toolbar but sized smaller for stamping over a photo. */
 .slot-action-btn {

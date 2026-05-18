@@ -148,7 +148,7 @@
   }
 </script>
 
-<div class="container-page" style="max-width: 1000px;">
+<div class="container-page">
   <PageHeader backHref={`/projects/${data.project.id}`}>
     <h1 class="text-xl font-medium">{data.project.name} — album review</h1>
   </PageHeader>

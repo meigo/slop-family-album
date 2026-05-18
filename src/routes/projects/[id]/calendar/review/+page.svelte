@@ -7,7 +7,7 @@
   import TextEditor from '$lib/components/TextEditor.svelte';
   import { getTemplate } from '$lib/layout/templates';
   import { invalidateAll } from '$app/navigation';
-  import { updateSlotPhoto, clearSlotPhoto, updateProjectSlotGap, updateProjectPagePadding, updateProjectPageBgColor, updateProjectPageSize, updateProjectWeekStart, updateProjectCalendarFontFamily, updateProjectCalendarColor, updateProjectCalendarGridStyle, type CalendarGridStyle, addPageText } from '$lib/db';
+  import { updateSlotPhoto, clearSlotPhoto, updateProjectSlotGap, updateProjectPagePadding, updateProjectPageBgColor, updateProjectPageSize, updateProjectWeekStart, updateProjectCalendarFontFamily, updateProjectCalendarColor, updateProjectCalendarGridStyle, updateProjectCalendarWeekendColor, type CalendarGridStyle, addPageText } from '$lib/db';
   import { DEFAULT_TEXT_STYLE, serializeStyle } from '$lib/text/style';
   import { PAPER_PRESETS } from '$lib/print/presets';
   import { FONT_CATALOG } from '$lib/text/catalog';
@@ -61,6 +61,15 @@
     const v = (e.currentTarget as HTMLInputElement).value;
     calendarColor = v;
     await updateProjectCalendarColor(data.project.id, v);
+  }
+
+  // svelte-ignore state_referenced_locally
+  let calendarWeekendColor = $state(data.project.calendar_weekend_color);
+
+  async function onCalendarWeekendColorChange(e: Event) {
+    const v = (e.currentTarget as HTMLInputElement).value;
+    calendarWeekendColor = v;
+    await updateProjectCalendarWeekendColor(data.project.id, v);
   }
 
   async function onPageBgChange(e: Event) {
@@ -168,7 +177,7 @@
   }
 </script>
 
-<div class="container-page" style="max-width: 1000px;">
+<div class="container-page">
   <PageHeader backHref={`/projects/${data.project.id}`}>
     <h1 class="text-xl font-medium">{data.project.name} — calendar review</h1>
   </PageHeader>
@@ -186,74 +195,80 @@
     <p class="text-sm mt-1 flex gap-3">
       <a class="btn-ghost" href={`/projects/${data.project.id}/calendar/export`}>export PDF →</a>
     </p>
-    <label class="text-sm mt-2 flex items-center gap-2" style="color: var(--color-muted)">
-      gap between images:
-      <input type="range" min="0" max="40" step="1" value={slotGapPx} oninput={onGapChange} style="width: 160px;" />
-      <span style="font-variant-numeric: tabular-nums; min-width: 3ch;">{slotGapPx}px</span>
-    </label>
-    <label class="text-sm mt-1 flex items-center gap-2" style="color: var(--color-muted)">
-      page margin:
-      <input type="range" min="0" max="60" step="1" value={pagePaddingPx} oninput={onPadChange} style="width: 160px;" />
-      <span style="font-variant-numeric: tabular-nums; min-width: 3ch;">{pagePaddingPx}px</span>
-    </label>
-    <label class="text-sm mt-1 flex items-center gap-2" style="color: var(--color-muted)">
-      page background:
-      <input type="color" bind:value={pageBgColor} oninput={onPageBgChange} style="width: 32px; height: 24px; border: 1px solid var(--color-line); border-radius: 3px;" />
-      <span style="font-family: var(--font-mono); font-size: 0.75rem;">{pageBgColor}</span>
-    </label>
-    <label class="text-sm mt-1 flex items-center gap-2" style="color: var(--color-muted)">
-      paper size:
-      <select onchange={onPageSizeChange} style="background: var(--color-surface); border: 1px solid var(--color-line); border-radius: 4px; padding: 2px 6px; font-size: 0.75rem;">
-        {#each ['landscape', 'portrait', 'square'] as group}
-          <optgroup label={group}>
-            {#each PAPER_PRESETS.filter((p) => p.group === group) as preset}
-              <option value={preset.id} selected={preset.width_mm === pageWidthMm && preset.height_mm === pageHeightMm}>{preset.label}</option>
+    <details open class="mt-3 settings-section">
+      <summary>Page</summary>
+      <div class="settings-body">
+        <label class="text-sm flex items-center gap-2" style="color: var(--color-muted)">
+          paper size:
+          <select onchange={onPageSizeChange} class="settings-select">
+            {#each ['landscape', 'portrait', 'square'] as group}
+              <optgroup label={group}>
+                {#each PAPER_PRESETS.filter((p) => p.group === group) as preset}
+                  <option value={preset.id} selected={preset.width_mm === pageWidthMm && preset.height_mm === pageHeightMm}>{preset.label}</option>
+                {/each}
+              </optgroup>
             {/each}
-          </optgroup>
-        {/each}
-      </select>
-      <span style="font-variant-numeric: tabular-nums;">{pageWidthMm}×{pageHeightMm}mm</span>
-    </label>
-    <label class="text-sm mt-1 flex items-center gap-2" style="color: var(--color-muted)">
-      grid style:
-      <button type="button" class={calendarGridStyle === 'boxed' ? 'btn-primary' : 'btn-ghost'} style="font-size: 0.75rem; padding: 0.125rem 0.5rem;" onclick={() => setCalendarGridStyle('boxed')}>boxed</button>
-      <button type="button" class={calendarGridStyle === 'grid' ? 'btn-primary' : 'btn-ghost'} style="font-size: 0.75rem; padding: 0.125rem 0.5rem;" onclick={() => setCalendarGridStyle('grid')}>grid</button>
-      <button type="button" class={calendarGridStyle === 'lines' ? 'btn-primary' : 'btn-ghost'} style="font-size: 0.75rem; padding: 0.125rem 0.5rem;" onclick={() => setCalendarGridStyle('lines')}>lines</button>
-      <button type="button" class={calendarGridStyle === 'none' ? 'btn-primary' : 'btn-ghost'} style="font-size: 0.75rem; padding: 0.125rem 0.5rem;" onclick={() => setCalendarGridStyle('none')}>none</button>
-    </label>
-    <label class="text-sm mt-1 flex items-center gap-2" style="color: var(--color-muted)">
-      calendar text/grid color:
-      <input type="color" bind:value={calendarColor} oninput={onCalendarColorChange} style="width: 32px; height: 24px; border: 1px solid var(--color-line); border-radius: 3px;" />
-      <span style="font-family: var(--font-mono); font-size: 0.75rem;">{calendarColor}</span>
-    </label>
-    <label class="text-sm mt-1 flex items-center gap-2" style="color: var(--color-muted)">
-      calendar font:
-      <select onchange={onCalendarFontChange} style="background: var(--color-surface); border: 1px solid var(--color-line); border-radius: 4px; padding: 2px 6px; font-size: 0.75rem;">
-        <option value="" selected={calendarFontFamily === null}>App default (mono)</option>
-        {#each ['sans-serif', 'serif', 'handwriting', 'display', 'monospace'] as category}
-          <optgroup label={category}>
-            {#each FONT_CATALOG.filter((f) => f.category === category) as font}
-              <option value={font.family} selected={font.family === calendarFontFamily}>{font.family}</option>
+          </select>
+          <span style="font-variant-numeric: tabular-nums;">{pageWidthMm}×{pageHeightMm}mm</span>
+        </label>
+        <label class="text-sm flex items-center gap-2" style="color: var(--color-muted)">
+          page margin:
+          <input type="range" min="0" max="60" step="1" value={pagePaddingPx} oninput={onPadChange} style="width: 160px;" />
+          <span style="font-variant-numeric: tabular-nums; min-width: 3ch;">{pagePaddingPx}px</span>
+        </label>
+        <label class="text-sm flex items-center gap-2" style="color: var(--color-muted)">
+          gap between images:
+          <input type="range" min="0" max="40" step="1" value={slotGapPx} oninput={onGapChange} style="width: 160px;" />
+          <span style="font-variant-numeric: tabular-nums; min-width: 3ch;">{slotGapPx}px</span>
+        </label>
+        <label class="text-sm flex items-center gap-2" style="color: var(--color-muted)">
+          page background:
+          <input type="color" bind:value={pageBgColor} oninput={onPageBgChange} style="width: 32px; height: 24px; border: 1px solid var(--color-line); border-radius: 3px;" />
+          <span style="font-family: var(--font-mono); font-size: 0.75rem;">{pageBgColor}</span>
+        </label>
+      </div>
+    </details>
+
+    <details class="mt-3 settings-section">
+      <summary>Calendar grid</summary>
+      <div class="settings-body">
+        <label class="text-sm flex items-center gap-2" style="color: var(--color-muted)">
+          grid style:
+          <button type="button" class={calendarGridStyle === 'boxed' ? 'btn-primary' : 'btn-ghost'} style="font-size: 0.75rem; padding: 0.125rem 0.5rem;" onclick={() => setCalendarGridStyle('boxed')}>boxed</button>
+          <button type="button" class={calendarGridStyle === 'grid' ? 'btn-primary' : 'btn-ghost'} style="font-size: 0.75rem; padding: 0.125rem 0.5rem;" onclick={() => setCalendarGridStyle('grid')}>grid</button>
+          <button type="button" class={calendarGridStyle === 'lines' ? 'btn-primary' : 'btn-ghost'} style="font-size: 0.75rem; padding: 0.125rem 0.5rem;" onclick={() => setCalendarGridStyle('lines')}>lines</button>
+          <button type="button" class={calendarGridStyle === 'none' ? 'btn-primary' : 'btn-ghost'} style="font-size: 0.75rem; padding: 0.125rem 0.5rem;" onclick={() => setCalendarGridStyle('none')}>none</button>
+        </label>
+        <label class="text-sm flex items-center gap-2" style="color: var(--color-muted)">
+          text + grid color:
+          <input type="color" bind:value={calendarColor} oninput={onCalendarColorChange} style="width: 32px; height: 24px; border: 1px solid var(--color-line); border-radius: 3px;" />
+          <span style="font-family: var(--font-mono); font-size: 0.75rem;">{calendarColor}</span>
+        </label>
+        <label class="text-sm flex items-center gap-2" style="color: var(--color-muted)">
+          Sunday color:
+          <input type="color" bind:value={calendarWeekendColor} oninput={onCalendarWeekendColorChange} style="width: 32px; height: 24px; border: 1px solid var(--color-line); border-radius: 3px;" />
+          <span style="font-family: var(--font-mono); font-size: 0.75rem;">{calendarWeekendColor}</span>
+        </label>
+        <label class="text-sm flex items-center gap-2" style="color: var(--color-muted)">
+          font:
+          <select onchange={onCalendarFontChange} class="settings-select">
+            <option value="" selected={calendarFontFamily === null}>App default (mono)</option>
+            {#each ['sans-serif', 'serif', 'handwriting', 'display', 'monospace'] as category}
+              <optgroup label={category}>
+                {#each FONT_CATALOG.filter((f) => f.category === category) as font}
+                  <option value={font.family} selected={font.family === calendarFontFamily}>{font.family}</option>
+                {/each}
+              </optgroup>
             {/each}
-          </optgroup>
-        {/each}
-      </select>
-    </label>
-    <label class="text-sm mt-1 flex items-center gap-2" style="color: var(--color-muted)">
-      week starts:
-      <button
-        type="button"
-        class={weekStart === 1 ? 'btn-primary' : 'btn-ghost'}
-        style="font-size: 0.75rem; padding: 0.125rem 0.5rem;"
-        onclick={() => setWeekStart(1)}
-      >Mon</button>
-      <button
-        type="button"
-        class={weekStart === 0 ? 'btn-primary' : 'btn-ghost'}
-        style="font-size: 0.75rem; padding: 0.125rem 0.5rem;"
-        onclick={() => setWeekStart(0)}
-      >Sun</button>
-    </label>
+          </select>
+        </label>
+        <label class="text-sm flex items-center gap-2" style="color: var(--color-muted)">
+          week starts:
+          <button type="button" class={weekStart === 1 ? 'btn-primary' : 'btn-ghost'} style="font-size: 0.75rem; padding: 0.125rem 0.5rem;" onclick={() => setWeekStart(1)}>Mon</button>
+          <button type="button" class={weekStart === 0 ? 'btn-primary' : 'btn-ghost'} style="font-size: 0.75rem; padding: 0.125rem 0.5rem;" onclick={() => setWeekStart(0)}>Sun</button>
+        </label>
+      </div>
+    </details>
 
     <div class="flex flex-col gap-6 mt-4">
       {#each data.pages as page, idx (page.id)}
@@ -277,6 +292,7 @@
               {pageHeightMm}
               {calendarFontFamily}
               {calendarColor}
+              {calendarWeekendColor}
               {calendarGridStyle}
               slotCornerRadiusPx={data.project.slot_corner_radius_px}
               pageTitle={page.title}

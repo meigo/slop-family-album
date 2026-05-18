@@ -110,6 +110,12 @@ export async function updateProjectCalendarGridStyle(id: number, style: Calendar
   await d.execute('UPDATE project SET calendar_grid_style = ? WHERE id = ?', [style, id]);
 }
 
+export async function updateProjectCalendarWeekendColor(id: number, color: string): Promise<void> {
+  const d = await db();
+  if (!/^#[0-9a-fA-F]{6}$/.test(color)) return;
+  await d.execute('UPDATE project SET calendar_weekend_color = ? WHERE id = ?', [color, id]);
+}
+
 export async function upsertPhoto(p: PhotoInsert): Promise<void> {
   const d = await db();
   await d.execute(

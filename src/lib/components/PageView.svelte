@@ -64,10 +64,12 @@
     calendarFontFamily?: string | null;
     /** Hex color for calendar grid text + cell borders. */
     calendarColor?: string;
+    /** Hex color for Sunday column header + cells. */
+    calendarWeekendColor?: string;
     /** Calendar grid rule style. */
     calendarGridStyle?: 'boxed' | 'grid' | 'lines' | 'none';
   }
-  let { templateId, slots, onSlotClick, onSwapPhoto, onAdjustCrop, onRemovePhoto, editingSlotIndex = null, slotGapPx = 2, pagePaddingPx = 0, pageTitle = null, events = [], weekStart = 1, texts = [], editingTextId = null, onEditText, pageBgColor = '#ffffff', pageWidthMm = 297, pageHeightMm = 210, printMode = false, slotCornerRadiusPx = 0, calendarFontFamily = null, calendarColor = '#000000', calendarGridStyle = 'boxed' }: Props = $props();
+  let { templateId, slots, onSlotClick, onSwapPhoto, onAdjustCrop, onRemovePhoto, editingSlotIndex = null, slotGapPx = 2, pagePaddingPx = 0, pageTitle = null, events = [], weekStart = 1, texts = [], editingTextId = null, onEditText, pageBgColor = '#ffffff', pageWidthMm = 297, pageHeightMm = 210, printMode = false, slotCornerRadiusPx = 0, calendarFontFamily = null, calendarColor = '#000000', calendarWeekendColor = '#dc2626', calendarGridStyle = 'boxed' }: Props = $props();
 
   let tpl = $derived<Template>(getTemplate(templateId));
   let aspectRatio = $derived(`${pageWidthMm} / ${pageHeightMm}`);
@@ -207,6 +209,7 @@
             {events}
             fontFamily={calendarFontFamily}
             color={calendarColor}
+            weekendColor={calendarWeekendColor}
             gridStyle={calendarGridStyle}
             showHeading={true}
           />

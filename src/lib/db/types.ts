@@ -24,6 +24,9 @@ export interface ProjectRow {
   /** Calendar grid cell rules: 'boxed' (full border), 'lines'
    *  (horizontal dividers only), or 'none' (no rules). */
   calendar_grid_style: string;
+  /** Hex color (#rrggbb) for Sunday column header + Sunday date cells.
+   *  Defaults to red. Set equal to calendar_color to disable. */
+  calendar_weekend_color: string;
 }
 
 export interface CalendarEventRow {
