@@ -17,8 +17,6 @@
     <a href={backHref} class="btn-ghost flex items-center gap-1">
       <ArrowLeft size={18} /> Back
     </a>
-  {:else}
-    <div></div>
   {/if}
   <div class="flex-1">{@render children?.()}</div>
   <ThemeToggle />
