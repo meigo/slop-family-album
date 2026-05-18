@@ -98,11 +98,13 @@ export async function exportPagesToPdf(opts: ExportOptions): Promise<string | nu
       scale,
       backgroundColor: null,
       timeout: 60000,
-      // Disable per-call web-font re-embedding (fonts are already
-      // loaded in the main document by printWhenReady). Leave the
-      // default features ON — fixSvgXmlDecode in particular is needed
-      // on WKWebView (macOS) for embedded photos to render at all.
-      font: false,
+      // Font embedding stays at the default (on). document.fonts.ready
+      // only guarantees fonts are registered for the *live* DOM render;
+      // the captured SVG <foreignObject> is its own context and needs
+      // the @font-face rules + font binaries inlined or the PDF falls
+      // back to system fonts.
+      // Leaving features at default — fixSvgXmlDecode in particular is
+      // needed on WKWebView (macOS) for embedded photos to render at all.
       // Note: routing photo reads through a Tauri command turned out to
       // sometimes produce data URLs that the SVG <foreignObject> didn't
       // render (photos missing in the saved PDF). Falling back to
