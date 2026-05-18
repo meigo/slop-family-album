@@ -12,7 +12,7 @@
   import { PAPER_PRESETS } from '$lib/print/presets';
   import { STYLE_PRESETS } from '$lib/print/style-presets';
   import { loadGoogleFont } from '$lib/text/fonts';
-  import { LayoutGrid, FileText, Settings } from '@lucide/svelte';
+  import { LayoutGrid, FileText, SlidersHorizontal } from '@lucide/svelte';
 
   let { data } = $props();
 
@@ -214,7 +214,7 @@
       </a>
     </div>
     <details open class="mt-3 settings-section">
-      <summary><Settings size={14} aria-hidden="true" /> Page</summary>
+      <summary><SlidersHorizontal size={14} aria-hidden="true" /> Page</summary>
       <div class="settings-body">
         <label class="text-sm flex items-center gap-2" style="color: var(--color-muted)">
           style preset:

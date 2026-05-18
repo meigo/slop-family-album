@@ -14,7 +14,7 @@
   import { FONT_CATALOG } from '$lib/text/catalog';
   import { loadGoogleFont } from '$lib/text/fonts';
   import { onMount } from 'svelte';
-  import { FileText, Settings } from '@lucide/svelte';
+  import { FileText, SlidersHorizontal } from '@lucide/svelte';
 
   let { data } = $props();
 
@@ -241,7 +241,7 @@
       </a>
     </div>
     <details open class="mt-3 settings-section">
-      <summary><Settings size={14} aria-hidden="true" /> Page</summary>
+      <summary><SlidersHorizontal size={14} aria-hidden="true" /> Page</summary>
       <div class="settings-body">
         <label class="text-sm flex items-center gap-2" style="color: var(--color-muted)">
           style preset:
@@ -284,7 +284,7 @@
     </details>
 
     <details class="mt-4 settings-section">
-      <summary><Settings size={14} aria-hidden="true" /> Calendar grid</summary>
+      <summary><SlidersHorizontal size={14} aria-hidden="true" /> Calendar grid</summary>
       <div class="settings-body">
         <label class="text-sm flex items-center gap-2" style="color: var(--color-muted)">
           grid style:
