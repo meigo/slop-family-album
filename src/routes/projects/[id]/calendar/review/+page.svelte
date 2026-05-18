@@ -275,7 +275,7 @@
       </div>
     </details>
 
-    <div class="flex flex-col gap-6 mt-4">
+    <div class="flex flex-col gap-12 mt-4">
       {#each data.pages as page, idx (page.id)}
         <section>
           <div class="flex items-center justify-between gap-2 mb-2">
