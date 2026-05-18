@@ -47,7 +47,7 @@
         <button type="button" class="btn-secondary" onclick={pickDir}>Choose…</button>
       </div>
     </label>
-    <button type="button" class="btn-primary" disabled={!name || !sourceDir} onclick={create}>Create</button>
+    <button type="button" class="btn-primary w-full" disabled={!name || !sourceDir} onclick={create}>Create</button>
   </section>
 
   {#if projects.length > 0}

@@ -100,7 +100,6 @@ button:not(:disabled) {
   padding: 0.5rem 1rem;
   border-radius: var(--radius-md);
   font-weight: 500;
-  width: 100%;
 }
 
 .btn-secondary {
