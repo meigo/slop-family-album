@@ -21,6 +21,9 @@ export interface ProjectRow {
   calendar_font_family: string | null;
   /** Hex color (#rrggbb) for calendar grid text + cell borders. */
   calendar_color: string;
+  /** Calendar grid cell rules: 'boxed' (full border), 'lines'
+   *  (horizontal dividers only), or 'none' (no rules). */
+  calendar_grid_style: string;
 }
 
 export interface CalendarEventRow {

@@ -129,6 +129,7 @@
         pageHeightMm={data.project.page_size_h_mm}
         calendarFontFamily={data.project.calendar_font_family}
         calendarColor={data.project.calendar_color}
+        calendarGridStyle={(data.project.calendar_grid_style === 'lines' || data.project.calendar_grid_style === 'none') ? data.project.calendar_grid_style : 'boxed'}
         pageTitle={page.title}
         events={data.events}
         weekStart={data.project.week_start === 0 ? 0 : 1}

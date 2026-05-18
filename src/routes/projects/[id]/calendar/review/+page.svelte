@@ -7,7 +7,7 @@
   import TextEditor from '$lib/components/TextEditor.svelte';
   import { getTemplate } from '$lib/layout/templates';
   import { invalidateAll } from '$app/navigation';
-  import { updateSlotPhoto, clearSlotPhoto, insertBlankPage, updateProjectSlotGap, updateProjectPagePadding, updateProjectPageBgColor, updateProjectPageSize, updateProjectWeekStart, updateProjectCalendarFontFamily, updateProjectCalendarColor, addPageText } from '$lib/db';
+  import { updateSlotPhoto, clearSlotPhoto, insertBlankPage, updateProjectSlotGap, updateProjectPagePadding, updateProjectPageBgColor, updateProjectPageSize, updateProjectWeekStart, updateProjectCalendarFontFamily, updateProjectCalendarColor, updateProjectCalendarGridStyle, type CalendarGridStyle, addPageText } from '$lib/db';
   import { DEFAULT_TEXT_STYLE, serializeStyle } from '$lib/text/style';
   import { PAPER_PRESETS } from '$lib/print/presets';
   import { FONT_CATALOG } from '$lib/text/catalog';
@@ -32,6 +32,17 @@
   let calendarFontFamily = $state<string | null>(data.project.calendar_font_family);
   // svelte-ignore state_referenced_locally
   let calendarColor = $state(data.project.calendar_color);
+  // svelte-ignore state_referenced_locally
+  let calendarGridStyle = $state<CalendarGridStyle>(
+    (data.project.calendar_grid_style === 'lines' || data.project.calendar_grid_style === 'none')
+      ? data.project.calendar_grid_style
+      : 'boxed'
+  );
+
+  async function setCalendarGridStyle(style: CalendarGridStyle) {
+    calendarGridStyle = style;
+    await updateProjectCalendarGridStyle(data.project.id, style);
+  }
 
   // Preload the saved font on mount so the first paint already has it.
   onMount(() => {
@@ -221,6 +232,12 @@
       <span style="font-variant-numeric: tabular-nums;">{pageWidthMm}×{pageHeightMm}mm</span>
     </label>
     <label class="text-sm mt-1 flex items-center gap-2" style="color: var(--color-muted)">
+      grid style:
+      <button type="button" class={calendarGridStyle === 'boxed' ? 'btn-primary' : 'btn-ghost'} style="font-size: 0.75rem; padding: 0.125rem 0.5rem;" onclick={() => setCalendarGridStyle('boxed')}>boxed</button>
+      <button type="button" class={calendarGridStyle === 'lines' ? 'btn-primary' : 'btn-ghost'} style="font-size: 0.75rem; padding: 0.125rem 0.5rem;" onclick={() => setCalendarGridStyle('lines')}>lines</button>
+      <button type="button" class={calendarGridStyle === 'none' ? 'btn-primary' : 'btn-ghost'} style="font-size: 0.75rem; padding: 0.125rem 0.5rem;" onclick={() => setCalendarGridStyle('none')}>none</button>
+    </label>
+    <label class="text-sm mt-1 flex items-center gap-2" style="color: var(--color-muted)">
       calendar text/grid color:
       <input type="color" bind:value={calendarColor} oninput={onCalendarColorChange} style="width: 32px; height: 24px; border: 1px solid var(--color-line); border-radius: 3px;" />
       <span style="font-family: var(--font-mono); font-size: 0.75rem;">{calendarColor}</span>
@@ -286,6 +303,7 @@
               {pageHeightMm}
               {calendarFontFamily}
               {calendarColor}
+              {calendarGridStyle}
               slotCornerRadiusPx={data.project.slot_corner_radius_px}
               pageTitle={page.title}
               events={data.events}

@@ -1,6 +1,5 @@
 <script lang="ts">
   import PageHeader from '$lib/components/PageHeader.svelte';
-  import EventsPanel from '$lib/components/EventsPanel.svelte';
   import { indexProject } from '$lib/indexing/scanner';
   import { indexProgress, type IndexProgress } from '$lib/indexing/progress';
   import { invalidateAll, goto } from '$app/navigation';
@@ -9,7 +8,6 @@
   import { generateCalendarSelection } from '$lib/selection/calendar';
   import { assembleAlbumPages, assembleCalendarPages } from '$lib/layout/assembly';
   import {
-    seedHolidays,
     updateProjectAlbumMaxPages,
     updateProjectSlotGap,
     updateProjectPagePadding,
@@ -121,10 +119,6 @@
     }
   }
 
-  async function seed(kind: 'estonian' | 'us') {
-    await seedHolidays(data.project.id, kind);
-    await invalidateAll();
-  }
 </script>
 
 <div class="container-page">
@@ -238,6 +232,12 @@
     {/if}
   </section>
 
+  <!-- Holiday presets + EventsPanel are hidden while the calendar grid
+       isn't rendering events. The underlying calendar_event table still
+       holds any previously-seeded rows, and seedHolidays / EventsPanel
+       both still work — wrap them back in a toggle once we re-introduce
+       a visual treatment for marked days. -->
+  <!--
   <section class="surface-card mt-4">
     <h2 class="text-lg font-medium mb-2">Holiday presets</h2>
     <p class="text-sm mb-2" style="color: var(--color-muted)">Add commonly-used holidays as yearly events.</p>
@@ -246,6 +246,6 @@
       <button type="button" class="btn-secondary" onclick={() => seed('us')}>Add US holidays</button>
     </div>
   </section>
-
   <EventsPanel projectId={data.project.id} />
+  -->
 </div>
