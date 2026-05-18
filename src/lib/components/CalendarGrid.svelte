@@ -44,7 +44,7 @@
 
 <div class="w-full h-full flex flex-col" style="font-size: 0.65em; color: {color};{fontFamily ? ` font-family: '${fontFamily.replace(/'/g, "\\'")}', sans-serif;` : ''}">
   {#if showHeading}
-    <div class="text-center font-medium mt-3 mb-4" style="font-size: 2.6em; line-height: 1;">{heading}</div>
+    <div class="text-center font-medium mt-3 mb-8" style="font-size: 2.6em; line-height: 1;">{heading}</div>
   {/if}
   <!-- Day headers. Use the calendar color at 70% opacity so headers
        sit lighter than date numbers — matches the previous "muted"
