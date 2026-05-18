@@ -12,6 +12,7 @@
   import { PAPER_PRESETS } from '$lib/print/presets';
   import { STYLE_PRESETS } from '$lib/print/style-presets';
   import { loadGoogleFont } from '$lib/text/fonts';
+  import { LayoutGrid, FileText } from '@lucide/svelte';
 
   let { data } = $props();
 
@@ -198,13 +199,20 @@
       </p>
     </section>
   {:else}
-    <p class="text-sm mt-2" style="color: var(--color-muted)">
-      {data.pages.length} pages · click any photo to swap, use the dropdown to change layout
+    <p class="text-sm mt-1" style="color: var(--color-muted)">
+      Review each page's auto-assembled layout. Hover any photo to swap or
+      crop it, drop in text overlays, change templates via the icon picker,
+      and reorder pages with the arrows. <strong>{data.pages.length}</strong>
+      {data.pages.length === 1 ? 'page' : 'pages'}.
     </p>
-    <p class="text-sm mt-1 flex gap-3">
-      <a class="btn-ghost" href={`/projects/${data.project.id}/album/sorter`}>open sorter view →</a>
-      <a class="btn-ghost" href={`/projects/${data.project.id}/album/export`}>export PDF →</a>
-    </p>
+    <div class="flex flex-wrap gap-2 mt-3">
+      <a class="btn-secondary flex items-center gap-1" href={`/projects/${data.project.id}/album/sorter`}>
+        <LayoutGrid size={16} /> Sorter view
+      </a>
+      <a class="btn-secondary flex items-center gap-1" href={`/projects/${data.project.id}/album/export`}>
+        <FileText size={16} /> Export PDF
+      </a>
+    </div>
     <details open class="mt-3 settings-section">
       <summary>Page</summary>
       <div class="settings-body">

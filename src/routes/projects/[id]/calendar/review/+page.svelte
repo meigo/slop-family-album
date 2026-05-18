@@ -14,6 +14,7 @@
   import { FONT_CATALOG } from '$lib/text/catalog';
   import { loadGoogleFont } from '$lib/text/fonts';
   import { onMount } from 'svelte';
+  import { FileText } from '@lucide/svelte';
 
   let { data } = $props();
 
@@ -229,12 +230,16 @@
       </p>
     </section>
   {:else}
-    <p class="text-sm mt-2" style="color: var(--color-muted)">
-      {data.pages.length} pages · click any photo to swap, use the dropdown to change layout
+    <p class="text-sm mt-1" style="color: var(--color-muted)">
+      Twelve months, one page per month. Pick photos, change the per-page
+      layout, tweak the grid style, font, and weekend color. Add text
+      overlays anywhere on a page.
     </p>
-    <p class="text-sm mt-1 flex gap-3">
-      <a class="btn-ghost" href={`/projects/${data.project.id}/calendar/export`}>export PDF →</a>
-    </p>
+    <div class="flex flex-wrap gap-2 mt-3">
+      <a class="btn-secondary flex items-center gap-1" href={`/projects/${data.project.id}/calendar/export`}>
+        <FileText size={16} /> Export PDF
+      </a>
+    </div>
     <details open class="mt-3 settings-section">
       <summary>Page</summary>
       <div class="settings-body">
