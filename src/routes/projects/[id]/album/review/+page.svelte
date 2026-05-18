@@ -273,7 +273,7 @@
         + insert blank page at start
       </button>
       {#each data.pages as page, idx (page.id)}
-        <section>
+        <section id="page-{page.id}" style="scroll-margin-top: 1rem;">
           <div class="flex items-center justify-between gap-2 mb-2">
             <h2 class="text-sm font-medium" style="color: var(--color-muted)">
               Page {idx + 1}{page.title ? ` · ${page.title}` : ''}

@@ -58,8 +58,12 @@
     overIdx = null;
   }
 
-  function openInReview() {
-    goto(`/projects/${data.project.id}/album/review`);
+  function openInReview(pageId: number) {
+    // Hash navigation lets the browser scroll the matching #page-N
+    // element into view automatically once the album review page is
+    // loaded; the review page sets scroll-margin-top so the heading
+    // sits below any fixed/sticky chrome.
+    goto(`/projects/${data.project.id}/album/review#page-${pageId}`);
   }
 </script>
 
@@ -105,7 +109,7 @@
             ondragover={(e) => onDragOver(e, idx)}
             ondrop={(e) => onDrop(e, idx)}
             ondragend={onDragEnd}
-            onclick={openInReview}
+            onclick={() => openInReview(page.id)}
             title="Page {idx + 1}{page.title ? ` · ${page.title}` : ''} · click to open · drag to reorder"
           >
             <PageThumb
