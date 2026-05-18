@@ -36,9 +36,14 @@ export interface ExportOptions {
   paperHeightMm: number;
   /** Suggested filename (without .pdf extension). */
   filename: string;
-  /** Rasterization scale relative to the on-screen size. Default 4 —
-   *  text stays crisp at A4 print size; trade-off is larger file +
-   *  more memory during capture. */
+  /** Target rasterization DPI for the printed page. The actual
+   *  modern-screenshot `scale` multiplier is computed at capture time
+   *  from this DPI + paperWidthMm + the first matching element's
+   *  on-screen width, so callers get the same DPI regardless of how
+   *  small the preview thumbnails are. */
+  targetDpi?: number;
+  /** Hard override for the scale multiplier. When set, targetDpi is
+   *  ignored. Useful for tests and one-off captures. */
   scale?: number;
   /** JPEG quality 0..1. */
   jpegQuality?: number;
@@ -66,7 +71,8 @@ export async function exportPagesToPdf(opts: ExportOptions): Promise<string | nu
     paperWidthMm,
     paperHeightMm,
     filename,
-    scale = 2,
+    targetDpi,
+    scale: overrideScale,
     jpegQuality = 0.92,
     imagePathMap,
     onProgress,
@@ -80,6 +86,17 @@ export async function exportPagesToPdf(opts: ExportOptions): Promise<string | nu
   if (pageEls.length === 0) {
     throw new Error(`No pages matched "${pageSelector}"`);
   }
+
+  // Pick the scale multiplier. Caller-overridden scale wins; otherwise
+  // derive from targetDpi so the rasterized image hits the requested
+  // print DPI regardless of how small the on-screen page is. Capped at
+  // 1 so a tiny preview never produces a sub-1-scale capture.
+  const onScreenWidthPx = pageEls[0].getBoundingClientRect().width;
+  const scale = overrideScale ?? (() => {
+    if (!targetDpi || onScreenWidthPx <= 0) return 3;
+    const targetPx = (paperWidthMm / 25.4) * targetDpi;
+    return Math.max(1, Math.ceil(targetPx / onScreenWidthPx));
+  })();
 
   const orientation: 'portrait' | 'landscape' =
     paperWidthMm >= paperHeightMm ? 'landscape' : 'portrait';

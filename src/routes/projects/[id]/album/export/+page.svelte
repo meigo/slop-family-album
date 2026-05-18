@@ -15,13 +15,10 @@
   let progress = $state<{ current: number; total: number } | null>(null);
   let paper = $derived(paperForSize(data.project.page_size_w_mm, data.project.page_size_h_mm));
 
-  function qualityToParams(q: 'low' | 'medium' | 'high'): { scale: number; jpegQuality: number } {
-    // Higher scale than before — the preview grid renders each .print-page
-    // at ~300px instead of ~1000px, so we need a bigger multiplier to
-    // hit equivalent print DPI for an A4-ish page.
-    if (q === 'low')  return { scale: 6,  jpegQuality: 0.85 };
-    if (q === 'high') return { scale: 12, jpegQuality: 0.96 };
-    return { scale: 9, jpegQuality: 0.92 };
+  function qualityToParams(q: 'low' | 'medium' | 'high'): { targetDpi: number; jpegQuality: number } {
+    if (q === 'low')  return { targetDpi: 170, jpegQuality: 0.85 };
+    if (q === 'high') return { targetDpi: 340, jpegQuality: 0.96 };
+    return { targetDpi: 255, jpegQuality: 0.92 };
   }
 
   async function exportPdf() {
@@ -32,7 +29,7 @@
     try {
       const w = data.project.page_size_w_mm;
       const h = data.project.page_size_h_mm;
-      const { scale, jpegQuality } = qualityToParams(quality);
+      const { targetDpi, jpegQuality } = qualityToParams(quality);
       // Build a lookup: the asset:// URL each <img> will use → original
       // file path, so the renderer can ask Rust to read+encode quickly.
       const imagePathMap = new Map<string, string>();
@@ -46,7 +43,7 @@
         paperWidthMm: w,
         paperHeightMm: h,
         filename: `${data.project.name} — album`,
-        scale,
+        targetDpi,
         jpegQuality,
         imagePathMap,
         onProgress: (current, total) => { progress = { current, total }; },
@@ -94,9 +91,9 @@
         <dt style="color: var(--color-muted)">Quality</dt>
         <dd>
           <select bind:value={quality} class="input-base" style="padding: 0.25rem 0.5rem; width: auto;">
-            <option value="low">Low — ~170 DPI, fastest render</option>
-            <option value="medium">Medium — ~255 DPI</option>
-            <option value="high">High — ~340 DPI, slower</option>
+            <option value="low">Low — 170 DPI</option>
+            <option value="medium">Medium — 255 DPI</option>
+            <option value="high">High — 340 DPI</option>
           </select>
         </dd>
       </dl>
