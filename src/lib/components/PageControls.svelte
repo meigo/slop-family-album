@@ -98,7 +98,7 @@
         class="template-picker-popover"
         role="dialog"
         aria-label="Choose page layout"
-        style="grid-template-columns: repeat({cols}, {kind === 'album' ? 50 : 66}px);"
+        style="grid-template-columns: repeat({cols}, 50px);"
       >
         {#each templates as t}
           <button
@@ -108,7 +108,7 @@
             onclick={() => pickTemplate(t)}
             title={t.label}
           >
-            <TemplateIcon templateId={t.id} width={kind === 'album' ? 40 : 56} />
+            <TemplateIcon templateId={t.id} width={40} />
           </button>
         {/each}
       </div>

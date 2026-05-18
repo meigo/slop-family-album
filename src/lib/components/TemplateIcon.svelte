@@ -3,21 +3,18 @@
 
   interface Props {
     templateId: string;
-    /** Pixel width of the icon. Height = width × aspect. */
+    /** Pixel side length. Icons are always rendered square — the schematic
+     *  represents layout structure, not paper aspect. */
     width?: number;
   }
   let { templateId, width = 40 }: Props = $props();
 
   let tpl = $derived<Template>(getTemplate(templateId));
-  // Use the template's own aspect for the icon so square-page templates
-  // render square icons and landscape (calendar) templates render wider.
-  let aspectRatio = $derived(tpl.aspect === 'square' ? 1 : 4 / 3);
-  let height = $derived(Math.round(width / aspectRatio));
 </script>
 
 <div
   class="relative inline-block"
-  style="width: {width}px; height: {height}px; background: var(--color-surface); border: 1px solid var(--color-line); flex-shrink: 0;"
+  style="width: {width}px; height: {width}px; background: var(--color-surface); border: 1px solid var(--color-line); flex-shrink: 0;"
 >
   {#each tpl.slots as slotLayout}
     <div
@@ -42,12 +39,13 @@
         top: {tpl.calendarGrid.y * 100}%;
         width: {tpl.calendarGrid.w * 100}%;
         height: {tpl.calendarGrid.h * 100}%;
-        background: repeating-linear-gradient(0deg, transparent 0 2px, var(--color-muted) 2px 3px),
-                    repeating-linear-gradient(90deg, transparent 0 2px, var(--color-muted) 2px 3px);
-        opacity: 0.7;
         outline: 1px solid var(--color-surface);
         outline-offset: -1px;
       "
-    ></div>
+    >
+      {#each [25, 50, 75] as pct}
+        <div style="position: absolute; left: 10%; right: 10%; top: {pct}%; height: 1px; background: var(--color-muted); opacity: 0.7;"></div>
+      {/each}
+    </div>
   {/if}
 </div>
