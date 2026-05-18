@@ -282,7 +282,11 @@ button:not(:disabled) {
 .template-picker-popover {
   position: absolute;
   top: 100%;
-  left: 0;
+  /* Anchor to the trigger's right edge so the popover grows leftward
+     into the visible page area. PageControls usually sits in the
+     right-side controls bar, where left-anchored popovers spill off
+     the viewport. */
+  right: 0;
   margin-top: 4px;
   z-index: var(--z-modal);
   background: var(--color-surface);
