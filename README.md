@@ -1,4 +1,4 @@
-# slop-photo-album
+# Annual Photo Album & Calendar Creator
 
 Local-first desktop app that turns a folder of a year's photos into a printable
 photo book and a matching wall calendar. Indexes your source folder, scores
@@ -64,7 +64,8 @@ All photo data and analysis stays on your machine — nothing leaves the compute
 
 Tauri v2 shell · SvelteKit (Svelte 5) renderer · SQLite via `tauri-plugin-sql`
 · Node sidecar (Sharp + exiftool-vendored) · Python sidecar (FastAPI + OpenCV
-+ OpenCLIP + imagehash) · jsPDF + modern-screenshot for PDF capture.
+
+- OpenCLIP + imagehash) · jsPDF + modern-screenshot for PDF capture.
 
 ## Development
 
