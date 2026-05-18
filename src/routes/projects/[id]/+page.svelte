@@ -8,8 +8,18 @@
   import { generateAlbumSelection } from '$lib/selection/album';
   import { generateCalendarSelection } from '$lib/selection/calendar';
   import { assembleAlbumPages, assembleCalendarPages } from '$lib/layout/assembly';
-  import { seedHolidays, updateProjectAlbumMaxPages } from '$lib/db';
+  import {
+    seedHolidays,
+    updateProjectAlbumMaxPages,
+    updateProjectSlotGap,
+    updateProjectPagePadding,
+    updateProjectSlotCornerRadius,
+    updateProjectPageBgColor,
+    updateProjectCalendarFontFamily,
+  } from '$lib/db';
   import { ALBUM_DEFAULTS } from '$lib/selection/constants';
+  import { STYLE_PRESETS } from '$lib/print/style-presets';
+  import { loadGoogleFont } from '$lib/text/fonts';
 
   let { data } = $props();
 
@@ -58,6 +68,31 @@
     maxPagesInput = clamped;
     await updateProjectAlbumMaxPages(data.project.id, clamped);
     await invalidateAll();
+  }
+
+  let applyingPreset = $state(false);
+
+  async function applyStylePreset(e: Event) {
+    const presetId = (e.currentTarget as HTMLSelectElement).value;
+    if (!presetId) return;
+    const preset = STYLE_PRESETS.find((p) => p.id === presetId);
+    if (!preset) return;
+    applyingPreset = true;
+    try {
+      if (preset.calendar_font_family) loadGoogleFont(preset.calendar_font_family);
+      await Promise.all([
+        updateProjectSlotGap(data.project.id, preset.slot_gap_px),
+        updateProjectPagePadding(data.project.id, preset.page_padding_px),
+        updateProjectSlotCornerRadius(data.project.id, preset.slot_corner_radius_px),
+        updateProjectPageBgColor(data.project.id, preset.page_bg_color),
+        updateProjectCalendarFontFamily(data.project.id, preset.calendar_font_family),
+      ]);
+      await invalidateAll();
+    } finally {
+      applyingPreset = false;
+      // Reset the dropdown so re-selecting the same preset works.
+      (e.currentTarget as HTMLSelectElement).value = '';
+    }
   }
 
   async function runGenerateAlbum() {
@@ -112,6 +147,20 @@
         class="w-20 px-2 py-1 border rounded"
         title="Cap on auto-generated pages. The assembler packs photos to roughly total/max-pages slots per page."
       />
+    </label>
+    <label class="flex items-center gap-2 mt-2 text-sm" style="color: var(--color-muted)">
+      Apply style preset:
+      <select
+        onchange={applyStylePreset}
+        disabled={applyingPreset}
+        style="background: var(--color-surface); border: 1px solid var(--color-line); border-radius: 4px; padding: 2px 6px; font-size: 0.85rem;"
+        title="Overwrites slot gap, page padding, slot corner radius, page background color, and calendar font on this project."
+      >
+        <option value="">— pick a preset —</option>
+        {#each STYLE_PRESETS as preset}
+          <option value={preset.id} title={preset.description}>{preset.label}</option>
+        {/each}
+      </select>
     </label>
     <p class="mt-3">
       Indexed: <strong>{data.count}</strong> photos
