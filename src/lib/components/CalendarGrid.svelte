@@ -53,8 +53,12 @@
       <div class="text-center font-medium" style="color: var(--color-muted);">{h}</div>
     {/each}
   </div>
-  <!-- Date rows -->
-  <div class="grid grid-cols-7 gap-px flex-1">
+  <!-- Date rows. grid-auto-rows: 1fr forces every row to share the
+       container's height evenly so the grid never overflows the
+       template's calendarGrid bbox when content (date number + events)
+       would otherwise push past the allocation. Cells overflow:hidden
+       handles content truncation inside each row. -->
+  <div class="grid grid-cols-7 gap-px flex-1 min-h-0" style="grid-auto-rows: 1fr;">
     {#each grid.rows as row}
       {#each row as cell}
         <div
