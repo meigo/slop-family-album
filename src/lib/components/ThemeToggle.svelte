@@ -15,6 +15,6 @@
   }
 </script>
 
-<button onclick={toggle} class="btn-ghost" aria-label="Toggle theme">
+<button onclick={toggle} class="btn-icon" aria-label="Toggle theme">
   {#if isDark}<Sun size={18} />{:else}<Moon size={18} />{/if}
 </button>
