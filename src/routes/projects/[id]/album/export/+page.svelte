@@ -61,51 +61,61 @@
   <title>{data.project.name} — album</title>
 </svelte:head>
 
-<div class="container-page print-hide" style="max-width: 1000px;">
+<div class="container-page print-hide">
   <PageHeader backHref={`/projects/${data.project.id}/album/review`}>
-    <h1 class="text-xl font-medium">{data.project.name} — export album</h1>
+    <h1 class="text-xl font-medium">Export album as PDF</h1>
   </PageHeader>
+
+  <p class="text-sm mt-1" style="color: var(--color-muted)">
+    Rasterizes every page below into a single PDF and writes it to disk —
+    no print dialog. You'll be asked where to save.
+  </p>
 
   {#if !data.selection || data.pages.length === 0}
     <section class="surface-card mt-4">
       <p style="color: var(--color-muted)">No album generated yet.</p>
     </section>
   {:else}
-    <section class="surface-card mt-4 flex flex-wrap items-center gap-3">
-      <span class="text-sm" style="color: var(--color-muted)">
-        Paper: {data.project.page_size_w_mm}×{data.project.page_size_h_mm}mm. Change the paper size on the album review page.
-      </span>
-      <label class="text-sm flex items-center gap-2">
-        Quality:
-        <select bind:value={quality} class="input-base" style="padding: 0.25rem 0.5rem; width: auto;">
-          <option value="low">Low (~170 DPI, fastest)</option>
-          <option value="medium">Medium (~255 DPI)</option>
-          <option value="high">High (~340 DPI, slower)</option>
-        </select>
-      </label>
-      <button type="button" class="btn-primary flex items-center gap-2" style="width: auto; margin-left: auto;" onclick={exportPdf} disabled={exporting}>
-        <Printer size={16} />
-        {#if exporting && progress}
-          Page {progress.current} / {progress.total}…
-        {:else if exporting}
-          Preparing…
-        {:else}
-          Save as PDF
+    <section class="surface-card mt-4">
+      <dl class="grid gap-2 text-sm" style="grid-template-columns: max-content 1fr; align-items: center;">
+        <dt style="color: var(--color-muted)">Paper size</dt>
+        <dd>
+          {data.project.page_size_w_mm}×{data.project.page_size_h_mm}mm
+          <span style="color: var(--color-muted)">·</span>
+          <a href={`/projects/${data.project.id}/album/review`} class="text-xs" style="color: var(--color-muted)">change on the review page</a>
+        </dd>
+
+        <dt style="color: var(--color-muted)">Pages</dt>
+        <dd>{data.pages.length}</dd>
+
+        <dt style="color: var(--color-muted)">Quality</dt>
+        <dd>
+          <select bind:value={quality} class="input-base" style="padding: 0.25rem 0.5rem; width: auto;">
+            <option value="low">Low — ~170 DPI, fastest render</option>
+            <option value="medium">Medium — ~255 DPI</option>
+            <option value="high">High — ~340 DPI, slower</option>
+          </select>
+        </dd>
+      </dl>
+
+      <div class="mt-4 flex flex-wrap items-center gap-3">
+        <button type="button" class="btn-primary flex items-center gap-2" onclick={exportPdf} disabled={exporting}>
+          <Printer size={16} />
+          {#if exporting && progress}
+            Page {progress.current} / {progress.total}…
+          {:else if exporting}
+            Preparing…
+          {:else}
+            Save as PDF
+          {/if}
+        </button>
+        {#if savedPath}
+          <span class="text-sm" style="color: var(--color-success)">Saved to {savedPath}</span>
         {/if}
-      </button>
-      <p class="text-sm" style="color: var(--color-muted); flex: 1; min-width: 100%;">
-        Generates the PDF directly — no print dialog. You'll be asked where to save the file.
-      </p>
-      {#if savedPath}
-        <p class="text-sm" style="color: var(--color-success); flex: 1; min-width: 100%;">
-          Saved to {savedPath}
-        </p>
-      {/if}
-      {#if error}
-        <p class="text-sm" style="color: var(--color-danger); flex: 1; min-width: 100%;">
-          Failed: {error}
-        </p>
-      {/if}
+        {#if error}
+          <span class="text-sm" style="color: var(--color-danger)">Failed: {error}</span>
+        {/if}
+      </div>
     </section>
   {/if}
 </div>
