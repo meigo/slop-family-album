@@ -32,19 +32,25 @@
     ></div>
   {/each}
   {#if tpl.calendarGrid}
-    {@const gridIsTall = tpl.calendarGrid.h > tpl.calendarGrid.w}
+    {@const cg = tpl.calendarGrid}
+    {@const gridIsTall = cg.h > cg.w}
     {@const lineCount = gridIsTall ? 6 : 3}
-    <!-- Inset the calendar block by 10% inside its bbox so the text lines
-         and the photo blocks read as distinct elements with breathing
-         room between them. Without the inset, lines and blocks touch
-         and the icon looks crowded. -->
+    <!-- Inset the calendar block 10% on each side that's adjacent to a
+         photo block (so lines + photos read as distinct shapes with a
+         gap), but stay flush with the icon's outer edges where the grid
+         already touches them (no double margin on the outer frame). -->
+    {@const EPS = 0.001}
+    {@const inT = cg.y > EPS ? '10%' : '0%'}
+    {@const inB = cg.y + cg.h < 1 - EPS ? '10%' : '0%'}
+    {@const inL = cg.x > EPS ? '10%' : '0%'}
+    {@const inR = cg.x + cg.w < 1 - EPS ? '10%' : '0%'}
     <div
       class="absolute"
       style="
-        left: calc({tpl.calendarGrid.x * 100}% + 10%);
-        top: calc({tpl.calendarGrid.y * 100}% + 10%);
-        width: calc({tpl.calendarGrid.w * 100}% - 20%);
-        height: calc({tpl.calendarGrid.h * 100}% - 20%);
+        left: calc({cg.x * 100}% + {inL});
+        top: calc({cg.y * 100}% + {inT});
+        width: calc({cg.w * 100}% - {inL} - {inR});
+        height: calc({cg.h * 100}% - {inT} - {inB});
       "
     >
       {#each Array(lineCount) as _, i}
