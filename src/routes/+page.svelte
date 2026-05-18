@@ -1,11 +1,11 @@
 <script lang="ts">
   import PageHeader from '$lib/components/PageHeader.svelte';
   import { open } from '@tauri-apps/plugin-dialog';
-  import { createProject, listProjects } from '$lib/db';
+  import { createProject, listProjects, deleteProject } from '$lib/db';
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
   import type { ProjectRow } from '$lib/db/types';
-  import { LayoutDashboard } from '@lucide/svelte';
+  import { LayoutDashboard, Trash2 } from '@lucide/svelte';
 
   let projects = $state<ProjectRow[]>([]);
   let name = $state('');
@@ -23,6 +23,13 @@
     if (!name || !sourceDir) return;
     const id = await createProject({ name, source_dir: sourceDir, album_year: albumYear });
     await goto(`/projects/${id}`);
+  }
+
+  async function removeProject(p: ProjectRow) {
+    const msg = `Delete project "${p.name}"?\n\nThis removes the index, CV scores, selections, generated pages, and all events — but does NOT touch the photos on disk in:\n${p.source_dir}`;
+    if (!confirm(msg)) return;
+    await deleteProject(p.id);
+    projects = await listProjects();
   }
 </script>
 
@@ -68,11 +75,21 @@
       {:else}
         <ul class="grid gap-3" style="grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));">
           {#each projects as p}
-            <li class="surface-card">
+            <li class="surface-card relative group">
               <a href={`/projects/${p.id}`} class="flex flex-col gap-1">
-                <span class="font-medium">{p.name}</span>
+                <span class="font-medium pr-6">{p.name}</span>
                 <span style="color: var(--color-muted)" class="text-sm">{p.album_year}</span>
               </a>
+              <button
+                type="button"
+                class="btn-icon absolute top-1 right-1 opacity-0 group-hover:opacity-100"
+                style="width: 24px; height: 24px; color: var(--color-danger);"
+                onclick={() => removeProject(p)}
+                title="Delete project"
+                aria-label={`Delete project ${p.name}`}
+              >
+                <Trash2 size={14} />
+              </button>
             </li>
           {/each}
         </ul>

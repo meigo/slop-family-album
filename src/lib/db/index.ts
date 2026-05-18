@@ -40,6 +40,15 @@ export async function getProject(id: number): Promise<ProjectRow | null> {
   return rows[0] ?? null;
 }
 
+/** Delete a project and everything it owns. Schema has ON DELETE CASCADE
+ *  on every table referencing project(id), so this one statement clears
+ *  photos, cv_score, selections, pages, slots, person_cluster, embeddings,
+ *  tags, faces, duplicate groups, calendar events, page text. */
+export async function deleteProject(id: number): Promise<void> {
+  const d = await db();
+  await d.execute('DELETE FROM project WHERE id = ?', [id]);
+}
+
 export async function updateProjectSlotGap(id: number, slotGapPx: number): Promise<void> {
   const d = await db();
   const clamped = Math.max(0, Math.min(40, Math.round(slotGapPx)));
