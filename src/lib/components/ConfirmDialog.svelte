@@ -55,18 +55,26 @@
 
 <svelte:window onkeydown={onKey} />
 
+<!-- svelte-ignore a11y_click_events_have_key_events — backdrop is a
+     click-to-cancel affordance; Esc on the window provides the keyboard
+     equivalent. -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="confirm-backdrop" role="presentation" onclick={onCancel}>
   <div
     class="confirm-card"
     role="dialog"
     aria-modal="true"
     aria-labelledby="confirm-title"
+    tabindex="-1"
     onclick={(e) => e.stopPropagation()}
   >
     <h2 id="confirm-title" class="confirm-title">{title}</h2>
     <p class="confirm-message">{message}</p>
     <div class="confirm-actions">
       <button type="button" class="btn-secondary" onclick={onCancel} disabled={busy}>{cancelLabel}</button>
+      <!-- svelte-ignore a11y_autofocus — focusing the action button on
+           dialog open is the expected modal behaviour; users want Enter
+           to confirm without an extra tab. -->
       <button
         type="button"
         class={danger ? 'btn-danger' : 'btn-primary'}
