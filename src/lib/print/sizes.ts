@@ -1,11 +1,17 @@
-/** Map a project's page_aspect (or null fallback) to a CSS @page size
- *  string + numeric aspect for the on-screen preview. A4 always. */
-export function paperForAspect(aspect: 'landscape' | 'portrait' | 'square' | null | string): {
+/** Convert a project's page_size_w_mm × page_size_h_mm into:
+ *   - a CSS @page size string for the PDF export
+ *   - the numeric aspect ratio for on-screen preview
+ *
+ * Pure function — no defaults are applied here. Callers should pass the
+ * project's stored width/height (the DB schema has NOT NULL DEFAULT 297/210
+ * so values are always present after migration 016).
+ */
+export function paperForSize(width_mm: number, height_mm: number): {
   cssSize: string;
   aspect: number;
 } {
-  if (aspect === 'portrait') return { cssSize: '210mm 297mm', aspect: 210 / 297 };
-  if (aspect === 'square')   return { cssSize: '210mm 210mm', aspect: 1 };
-  // Default and 'landscape': A4 landscape.
-  return { cssSize: '297mm 210mm', aspect: 297 / 210 };
+  return {
+    cssSize: `${width_mm}mm ${height_mm}mm`,
+    aspect: width_mm / height_mm,
+  };
 }

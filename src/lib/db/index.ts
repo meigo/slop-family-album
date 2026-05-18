@@ -59,16 +59,13 @@ export async function updateProjectPageBgColor(id: number, color: string): Promi
   await d.execute('UPDATE project SET page_bg_color = ? WHERE id = ?', [color, id]);
 }
 
-/** null = use the template's own aspect (back-compat default for old
- *  projects); 'landscape' | 'portrait' | 'square' overrides templates
- *  project-wide. */
-export async function updateProjectPageAspect(
-  id: number,
-  aspect: 'landscape' | 'portrait' | 'square' | null,
-): Promise<void> {
+/** Persist the project's paper size in mm. Clamped to sensible bounds
+ *  (50–1000mm per side) to keep CSS @page sizes valid. */
+export async function updateProjectPageSize(id: number, width_mm: number, height_mm: number): Promise<void> {
   const d = await db();
-  if (aspect !== null && aspect !== 'landscape' && aspect !== 'portrait' && aspect !== 'square') return;
-  await d.execute('UPDATE project SET page_aspect = ? WHERE id = ?', [aspect, id]);
+  const w = Math.max(50, Math.min(1000, Math.round(width_mm)));
+  const h = Math.max(50, Math.min(1000, Math.round(height_mm)));
+  await d.execute('UPDATE project SET page_size_w_mm = ?, page_size_h_mm = ? WHERE id = ?', [w, h, id]);
 }
 
 /** null = use ALBUM_DEFAULTS.default_max_pages; otherwise clamped to [4, 80]

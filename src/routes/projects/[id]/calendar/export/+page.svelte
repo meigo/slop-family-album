@@ -1,7 +1,7 @@
 <script lang="ts">
   import PageHeader from '$lib/components/PageHeader.svelte';
   import PageView from '$lib/components/PageView.svelte';
-  import { paperForAspect } from '$lib/print/sizes';
+  import { paperForSize } from '$lib/print/sizes';
   import { exportPagesToPdf } from '$lib/print/prepare';
   import { Printer } from '@lucide/svelte';
   import { convertFileSrc } from '@tauri-apps/api/core';
@@ -13,23 +13,12 @@
   let error = $state<string | null>(null);
   let quality = $state<'low' | 'medium' | 'high'>('medium');
   let progress = $state<{ current: number; total: number } | null>(null);
-  let paper = $derived(paperForAspect(data.project.page_aspect));
+  let paper = $derived(paperForSize(data.project.page_size_w_mm, data.project.page_size_h_mm));
 
   function qualityToParams(q: 'low' | 'medium' | 'high'): { scale: number; jpegQuality: number } {
     if (q === 'low')  return { scale: 2, jpegQuality: 0.85 };
     if (q === 'high') return { scale: 4, jpegQuality: 0.96 };
     return { scale: 3, jpegQuality: 0.92 };
-  }
-  let pageAspect = $derived<'landscape' | 'portrait' | 'square' | null>(
-    (data.project.page_aspect === 'landscape' || data.project.page_aspect === 'portrait' || data.project.page_aspect === 'square')
-      ? data.project.page_aspect
-      : null
-  );
-
-  function parseMm(cssSize: string): { w: number; h: number } {
-    const m = /^([0-9.]+)mm\s+([0-9.]+)mm$/.exec(cssSize);
-    if (!m) return { w: 297, h: 210 };
-    return { w: Number(m[1]), h: Number(m[2]) };
   }
 
   async function exportPdf() {
@@ -38,7 +27,8 @@
     error = null;
     progress = null;
     try {
-      const { w, h } = parseMm(paper.cssSize);
+      const w = data.project.page_size_w_mm;
+      const h = data.project.page_size_h_mm;
       const { scale, jpegQuality } = qualityToParams(quality);
       const imagePathMap = new Map<string, string>();
       for (const page of data.pages) {
@@ -81,7 +71,7 @@
   {:else}
     <section class="surface-card mt-4 flex flex-wrap items-center gap-3">
       <span class="text-sm" style="color: var(--color-muted)">
-        Paper: A4 {data.project.page_aspect ?? 'landscape (default)'}. Change the page format on the calendar review page.
+        Paper: {data.project.page_size_w_mm}×{data.project.page_size_h_mm}mm. Change the paper size on the calendar review page.
       </span>
       <label class="text-sm flex items-center gap-2">
         Quality:
@@ -128,7 +118,8 @@
         pagePaddingPx={data.project.page_padding_px}
         pageBgColor={data.project.page_bg_color}
         slotCornerRadiusPx={data.project.slot_corner_radius_px}
-        {pageAspect}
+        pageWidthMm={data.project.page_size_w_mm}
+        pageHeightMm={data.project.page_size_h_mm}
         pageTitle={page.title}
         events={data.events}
         weekStart={data.project.week_start === 0 ? 0 : 1}

@@ -7,8 +7,9 @@
   import TextEditor from '$lib/components/TextEditor.svelte';
   import { getTemplate } from '$lib/layout/templates';
   import { invalidateAll } from '$app/navigation';
-  import { updateSlotPhoto, clearSlotPhoto, insertBlankPage, updateProjectSlotGap, updateProjectPagePadding, updateProjectPageBgColor, updateProjectPageAspect, updateProjectWeekStart, addPageText } from '$lib/db';
+  import { updateSlotPhoto, clearSlotPhoto, insertBlankPage, updateProjectSlotGap, updateProjectPagePadding, updateProjectPageBgColor, updateProjectPageSize, updateProjectWeekStart, addPageText } from '$lib/db';
   import { DEFAULT_TEXT_STYLE, serializeStyle } from '$lib/text/style';
+  import { PAPER_PRESETS } from '$lib/print/presets';
 
   let { data } = $props();
 
@@ -21,11 +22,9 @@
   // svelte-ignore state_referenced_locally
   let pageBgColor = $state(data.project.page_bg_color);
   // svelte-ignore state_referenced_locally
-  let pageAspect = $state<'landscape' | 'portrait' | 'square' | null>(
-    (data.project.page_aspect === 'landscape' || data.project.page_aspect === 'portrait' || data.project.page_aspect === 'square')
-      ? data.project.page_aspect
-      : null
-  );
+  let pageWidthMm = $state(data.project.page_size_w_mm);
+  // svelte-ignore state_referenced_locally
+  let pageHeightMm = $state(data.project.page_size_h_mm);
 
   async function onPageBgChange(e: Event) {
     const v = (e.currentTarget as HTMLInputElement).value;
@@ -33,9 +32,13 @@
     await updateProjectPageBgColor(data.project.id, v);
   }
 
-  async function setPageAspect(a: 'landscape' | 'portrait' | 'square') {
-    pageAspect = a;
-    await updateProjectPageAspect(data.project.id, a);
+  async function onPageSizeChange(e: Event) {
+    const presetId = (e.currentTarget as HTMLSelectElement).value;
+    const preset = PAPER_PRESETS.find((p) => p.id === presetId);
+    if (!preset) return;
+    pageWidthMm = preset.width_mm;
+    pageHeightMm = preset.height_mm;
+    await updateProjectPageSize(data.project.id, preset.width_mm, preset.height_mm);
   }
 
   async function setWeekStart(v: 0 | 1) {
@@ -179,10 +182,17 @@
       <span style="font-family: var(--font-mono); font-size: 0.75rem;">{pageBgColor}</span>
     </label>
     <label class="text-sm mt-1 flex items-center gap-2" style="color: var(--color-muted)">
-      page format:
-      <button type="button" class={pageAspect === 'landscape' ? 'btn-primary' : 'btn-ghost'} style="font-size: 0.75rem; padding: 0.125rem 0.5rem;" onclick={() => setPageAspect('landscape')}>landscape</button>
-      <button type="button" class={pageAspect === 'portrait' ? 'btn-primary' : 'btn-ghost'} style="font-size: 0.75rem; padding: 0.125rem 0.5rem;" onclick={() => setPageAspect('portrait')}>portrait</button>
-      <button type="button" class={pageAspect === 'square' ? 'btn-primary' : 'btn-ghost'} style="font-size: 0.75rem; padding: 0.125rem 0.5rem;" onclick={() => setPageAspect('square')}>square</button>
+      paper size:
+      <select onchange={onPageSizeChange} style="background: var(--color-surface); border: 1px solid var(--color-line); border-radius: 4px; padding: 2px 6px; font-size: 0.75rem;">
+        {#each ['landscape', 'portrait', 'square'] as group}
+          <optgroup label={group}>
+            {#each PAPER_PRESETS.filter((p) => p.group === group) as preset}
+              <option value={preset.id} selected={preset.width_mm === pageWidthMm && preset.height_mm === pageHeightMm}>{preset.label}</option>
+            {/each}
+          </optgroup>
+        {/each}
+      </select>
+      <span style="font-variant-numeric: tabular-nums;">{pageWidthMm}×{pageHeightMm}mm</span>
     </label>
     <label class="text-sm mt-1 flex items-center gap-2" style="color: var(--color-muted)">
       week starts:
@@ -228,7 +238,8 @@
               {slotGapPx}
               {pagePaddingPx}
               {pageBgColor}
-              {pageAspect}
+              {pageWidthMm}
+              {pageHeightMm}
               slotCornerRadiusPx={data.project.slot_corner_radius_px}
               pageTitle={page.title}
               events={data.events}

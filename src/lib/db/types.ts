@@ -9,9 +9,13 @@ export interface ProjectRow {
   page_padding_px: number;
   week_start: number;
   page_bg_color: string;
+  /** Deprecated by page_size_w_mm/page_size_h_mm but kept for safe
+   *  rollback; not read by any current code. */
   page_aspect: string | null;
   album_max_pages: number | null;
   slot_corner_radius_px: number;
+  page_size_w_mm: number;
+  page_size_h_mm: number;
 }
 
 export interface CalendarEventRow {
