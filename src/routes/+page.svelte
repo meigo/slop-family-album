@@ -1,20 +1,20 @@
 <script lang="ts">
   import PageHeader from '$lib/components/PageHeader.svelte';
   import { open } from '@tauri-apps/plugin-dialog';
-  import { createProject, listProjects, deleteProject } from '$lib/db';
+  import { createProject, listProjectsWithThumbs, deleteProject, type ProjectWithThumb } from '$lib/db';
+  import { convertFileSrc } from '@tauri-apps/api/core';
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
-  import type { ProjectRow } from '$lib/db/types';
   import { LayoutDashboard, Trash2, Plus } from '@lucide/svelte';
   import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
 
-  let projects = $state<ProjectRow[]>([]);
+  let projects = $state<ProjectWithThumb[]>([]);
   let name = $state('');
   let albumYear = $state(new Date().getFullYear() - 1);
   let sourceDir = $state('');
   let newProjectOpen = $state(false);
 
-  onMount(async () => { projects = await listProjects(); });
+  onMount(async () => { projects = await listProjectsWithThumbs(); });
 
   function openNewProject() {
     name = '';
@@ -39,14 +39,14 @@
     await goto(`/projects/${id}`);
   }
 
-  let pendingDelete = $state<ProjectRow | null>(null);
+  let pendingDelete = $state<ProjectWithThumb | null>(null);
 
   async function confirmDelete() {
     if (!pendingDelete) return;
     const id = pendingDelete.id;
     pendingDelete = null;
     await deleteProject(id);
-    projects = await listProjects();
+    projects = await listProjectsWithThumbs();
   }
 
   function onModalKey(e: KeyboardEvent) {
@@ -86,10 +86,27 @@
     {:else}
       <ul class="grid gap-3" style="grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));">
         {#each projects as p}
-          <li class="surface-card relative group">
-            <a href={`/projects/${p.id}`} class="flex flex-col gap-1">
-              <span class="font-medium pr-6">{p.name}</span>
-              <span style="color: var(--color-muted)" class="text-sm">{p.album_year}</span>
+          <li class="surface-card relative group" style="padding: 0; overflow: hidden;">
+            <a href={`/projects/${p.id}`} class="block">
+              {#if p.thumb_path}
+                <img
+                  src={convertFileSrc(p.thumb_path)}
+                  alt=""
+                  class="block w-full"
+                  style="aspect-ratio: 4 / 3; object-fit: cover; background: var(--color-line);"
+                  loading="lazy"
+                  draggable="false"
+                />
+              {:else}
+                <div
+                  class="w-full flex items-center justify-center text-xs"
+                  style="aspect-ratio: 4 / 3; background: var(--color-line); color: var(--color-muted);"
+                >Not indexed yet</div>
+              {/if}
+              <div class="flex flex-col gap-1" style="padding: var(--space-3);">
+                <span class="font-medium pr-6">{p.name}</span>
+                <span style="color: var(--color-muted)" class="text-sm">{p.album_year}</span>
+              </div>
             </a>
             <button
               type="button"

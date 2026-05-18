@@ -34,6 +34,38 @@ export async function listProjects(): Promise<ProjectRow[]> {
   return d.select<ProjectRow[]>('SELECT * FROM project ORDER BY created_at DESC');
 }
 
+export interface ProjectWithThumb extends ProjectRow {
+  /** Absolute path to a representative photo thumbnail, or null when
+   *  the project has no photos indexed yet. Prefers the top-scored
+   *  photo from the current album selection; falls back to any
+   *  indexed photo. */
+  thumb_path: string | null;
+}
+
+export async function listProjectsWithThumbs(): Promise<ProjectWithThumb[]> {
+  const d = await db();
+  return d.select<ProjectWithThumb[]>(
+    `SELECT p.*,
+       COALESCE(
+         (SELECT ph.thumb_path
+            FROM photo ph
+            JOIN selected_photo sp ON sp.photo_id = ph.id
+            JOIN selection s ON s.id = sp.selection_id
+           WHERE s.project_id = p.id
+             AND s.kind = 'album'
+             AND s.is_current = 1
+             AND sp.score IS NOT NULL
+           ORDER BY sp.score DESC
+           LIMIT 1),
+         (SELECT thumb_path FROM photo
+           WHERE project_id = p.id AND thumb_path IS NOT NULL
+           LIMIT 1)
+       ) AS thumb_path
+     FROM project p
+     ORDER BY p.created_at DESC`
+  );
+}
+
 export async function getProject(id: number): Promise<ProjectRow | null> {
   const d = await db();
   const rows = await d.select<ProjectRow[]>('SELECT * FROM project WHERE id = ?', [id]);
