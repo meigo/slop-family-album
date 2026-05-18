@@ -98,7 +98,7 @@
         class="template-picker-popover"
         role="dialog"
         aria-label="Choose page layout"
-        style="grid-template-columns: repeat({cols}, {kind === 'album' ? 44 : 60}px);"
+        style="grid-template-columns: repeat({cols}, {kind === 'album' ? 50 : 66}px);"
       >
         {#each templates as t}
           <button
