@@ -23,9 +23,12 @@
   let paper = $derived(paperForSize(data.project.calendar_page_size_w_mm, data.project.calendar_page_size_h_mm));
 
   function qualityToParams(q: 'low' | 'medium' | 'high'): { scale: number; jpegQuality: number } {
-    if (q === 'low')  return { scale: 2, jpegQuality: 0.85 };
-    if (q === 'high') return { scale: 4, jpegQuality: 0.96 };
-    return { scale: 3, jpegQuality: 0.92 };
+    // Higher scale than before — the preview grid renders each .print-page
+    // at ~300px instead of ~1000px, so we need a bigger multiplier to
+    // hit equivalent print DPI for an A4-ish page.
+    if (q === 'low')  return { scale: 6,  jpegQuality: 0.85 };
+    if (q === 'high') return { scale: 12, jpegQuality: 0.96 };
+    return { scale: 9, jpegQuality: 0.92 };
   }
 
   async function exportPdf() {
@@ -153,12 +156,14 @@
 
 <style>
   .print-pages {
-    max-width: 1100px;
+    max-width: 1200px;
     margin: 1rem auto 4rem;
     padding: 0 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
+    display: grid;
+    /* Wider min cell for landscape calendar pages (4:3 typical) so each
+       thumb stays readable. */
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1rem;
   }
   .print-page {
     width: 100%;
