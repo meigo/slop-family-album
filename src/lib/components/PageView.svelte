@@ -204,7 +204,7 @@
             month={ym.month}
             {weekStart}
             {events}
-            showHeading={false}
+            showHeading={true}
           />
         </div>
       </div>
