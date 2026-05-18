@@ -102,15 +102,19 @@
       <ArrowDown size={16} />
     </button>
   {/if}
-  <button
-    type="button"
-    class="btn-ghost"
-    onclick={remove}
-    disabled={busy}
-    title="Delete this page"
-    aria-label="Delete page"
-    style="color: var(--color-danger);"
-  >
-    <Trash2 size={16} />
-  </button>
+  {#if kind === 'album'}
+    <!-- Deleting a calendar page would leave a gap in Jan–Dec; not
+         meaningful. Album pages remain freely deletable. -->
+    <button
+      type="button"
+      class="btn-ghost"
+      onclick={remove}
+      disabled={busy}
+      title="Delete this page"
+      aria-label="Delete page"
+      style="color: var(--color-danger);"
+    >
+      <Trash2 size={16} />
+    </button>
+  {/if}
 </div>
