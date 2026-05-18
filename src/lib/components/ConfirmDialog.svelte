@@ -59,9 +59,9 @@
      click-to-cancel affordance; Esc on the window provides the keyboard
      equivalent. -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class="confirm-backdrop" role="presentation" onclick={onCancel}>
+<div class="modal-backdrop" role="presentation" onclick={onCancel}>
   <div
-    class="confirm-card"
+    class="modal-card"
     role="dialog"
     aria-modal="true"
     aria-labelledby="confirm-title"
@@ -87,25 +87,6 @@
 </div>
 
 <style>
-  .confirm-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.55);
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-  }
-  .confirm-card {
-    background: var(--color-surface);
-    border: 1px solid var(--color-line);
-    border-radius: var(--radius-lg);
-    padding: var(--space-5);
-    width: 100%;
-    max-width: 480px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-  }
   .confirm-title {
     font-size: var(--text-lg);
     font-weight: 500;
