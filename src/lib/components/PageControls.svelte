@@ -78,11 +78,12 @@
       <TemplateIcon templateId={currentTemplateId} width={kind === 'album' ? 22 : 30} />
     </button>
     {#if pickerOpen}
+      {@const cols = Math.ceil(Math.sqrt(templates.length))}
       <div
         class="template-picker-popover"
         role="dialog"
         aria-label="Choose page layout"
-        style="grid-template-columns: repeat(auto-fill, minmax({kind === 'album' ? 44 : 60}px, 1fr));"
+        style="grid-template-columns: repeat({cols}, {kind === 'album' ? 44 : 60}px);"
       >
         {#each templates as t}
           <button
