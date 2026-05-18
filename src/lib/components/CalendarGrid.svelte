@@ -44,12 +44,12 @@
 
 <div class="w-full h-full flex flex-col" style="font-size: 0.65em; color: {color};{fontFamily ? ` font-family: '${fontFamily.replace(/'/g, "\\'")}', sans-serif;` : ''}">
   {#if showHeading}
-    <div class="text-center font-medium mb-1" style="font-size: 1.4em;">{heading}</div>
+    <div class="text-center font-medium mb-3" style="font-size: 2.6em; line-height: 1;">{heading}</div>
   {/if}
   <!-- Day headers. Use the calendar color at 70% opacity so headers
        sit lighter than date numbers — matches the previous "muted"
        look without depending on app theme colors. -->
-  <div class="grid grid-cols-7 gap-px mb-px">
+  <div class="grid grid-cols-7 gap-px mb-3">
     {#each grid.dayHeaders as h}
       <div class="text-center font-medium" style="opacity: 0.7;">{h}</div>
     {/each}
