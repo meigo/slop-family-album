@@ -77,26 +77,31 @@
     {/each}
   </select>
 
-  <button
-    type="button"
-    class="btn-ghost"
-    onclick={moveUp}
-    disabled={busy || isFirst}
-    title="Move page up"
-    aria-label="Move page up"
-  >
-    <ArrowUp size={16} />
-  </button>
-  <button
-    type="button"
-    class="btn-ghost"
-    onclick={moveDown}
-    disabled={busy || isLast}
-    title="Move page down"
-    aria-label="Move page down"
-  >
-    <ArrowDown size={16} />
-  </button>
+  {#if kind === 'album'}
+    <!-- Calendar months are fixed Jan–Dec; reordering pages would
+         desynchronize page-title and the month it represents. Hidden
+         for calendar; only album pages can be reordered. -->
+    <button
+      type="button"
+      class="btn-ghost"
+      onclick={moveUp}
+      disabled={busy || isFirst}
+      title="Move page up"
+      aria-label="Move page up"
+    >
+      <ArrowUp size={16} />
+    </button>
+    <button
+      type="button"
+      class="btn-ghost"
+      onclick={moveDown}
+      disabled={busy || isLast}
+      title="Move page down"
+      aria-label="Move page down"
+    >
+      <ArrowDown size={16} />
+    </button>
+  {/if}
   <button
     type="button"
     class="btn-ghost"
