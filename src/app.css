@@ -337,6 +337,9 @@ button:not(:disabled) {
   padding: 2px;
   line-height: 0;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 .template-picker-option:hover { border-color: var(--color-muted); }
 .template-picker-option.is-current { border-color: var(--color-fg); }

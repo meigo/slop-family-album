@@ -21,9 +21,13 @@
   }
 </script>
 
+<!-- box-shadow inset draws the 1px frame *inside* the declared width/
+     height without taking layout space (unlike border with border-box,
+     which shrinks the content area and makes 100%-width children
+     overflow the right + bottom). -->
 <div
   class="relative inline-block"
-  style="width: {width}px; height: {width}px; background: var(--color-surface); border: 1px solid var(--color-line); flex-shrink: 0;"
+  style="width: {width}px; height: {width}px; background: var(--color-surface); box-shadow: inset 0 0 0 1px var(--color-line); flex-shrink: 0;"
 >
   {#each tpl.slots as slotLayout}
     {@const left = snap(slotLayout.x)}
