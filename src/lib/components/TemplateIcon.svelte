@@ -55,7 +55,11 @@
     >
       {#each Array(lineCount) as _, i}
         {@const pct = (i / (lineCount - 1)) * 100}
-        <div style="position: absolute; left: 0; right: 0; top: {pct}%; height: 1px; background: var(--color-muted); opacity: 0.8;"></div>
+        <!-- 2px line + translateY(-1px) so the line stays centered on the
+             computed top % even when sub-pixel rounding nudges its
+             position; 1px lines at fractional offsets render with mixed
+             anti-aliasing and look inconsistent in width. -->
+        <div style="position: absolute; left: 0; right: 0; top: {pct}%; height: 2px; transform: translateY(-1px); background: var(--color-muted); opacity: 0.8;"></div>
       {/each}
     </div>
   {/if}
