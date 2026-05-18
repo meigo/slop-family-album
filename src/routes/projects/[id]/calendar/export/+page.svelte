@@ -3,10 +3,17 @@
   import PageView from '$lib/components/PageView.svelte';
   import { paperForSize } from '$lib/print/sizes';
   import { exportPagesToPdf } from '$lib/print/prepare';
+  import { loadGoogleFont } from '$lib/text/fonts';
   import { Printer } from '@lucide/svelte';
   import { convertFileSrc } from '@tauri-apps/api/core';
+  import { onMount } from 'svelte';
 
   let { data } = $props();
+
+  // Preload the calendar font so it's embedded when the PDF capture runs.
+  onMount(() => {
+    if (data.project.calendar_font_family) loadGoogleFont(data.project.calendar_font_family);
+  });
 
   let exporting = $state(false);
   let savedPath = $state<string | null>(null);
@@ -120,6 +127,7 @@
         slotCornerRadiusPx={data.project.slot_corner_radius_px}
         pageWidthMm={data.project.page_size_w_mm}
         pageHeightMm={data.project.page_size_h_mm}
+        calendarFontFamily={data.project.calendar_font_family}
         pageTitle={page.title}
         events={data.events}
         weekStart={data.project.week_start === 0 ? 0 : 1}

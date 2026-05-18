@@ -58,8 +58,12 @@
     /** Corner radius (px) for each slot image. 0 = square slots (default).
      *  The page itself is always rectangular; only the slot images round. */
     slotCornerRadiusPx?: number;
+    /** Optional Google Font family applied to the calendar grid on
+     *  calendar templates. Ignored for album templates. Caller must
+     *  have already triggered loadGoogleFont. */
+    calendarFontFamily?: string | null;
   }
-  let { templateId, slots, onSlotClick, onSwapPhoto, onAdjustCrop, onRemovePhoto, editingSlotIndex = null, slotGapPx = 2, pagePaddingPx = 0, pageTitle = null, events = [], weekStart = 1, texts = [], editingTextId = null, onEditText, pageBgColor = '#ffffff', pageWidthMm = 297, pageHeightMm = 210, printMode = false, slotCornerRadiusPx = 0 }: Props = $props();
+  let { templateId, slots, onSlotClick, onSwapPhoto, onAdjustCrop, onRemovePhoto, editingSlotIndex = null, slotGapPx = 2, pagePaddingPx = 0, pageTitle = null, events = [], weekStart = 1, texts = [], editingTextId = null, onEditText, pageBgColor = '#ffffff', pageWidthMm = 297, pageHeightMm = 210, printMode = false, slotCornerRadiusPx = 0, calendarFontFamily = null }: Props = $props();
 
   let tpl = $derived<Template>(getTemplate(templateId));
   let aspectRatio = $derived(`${pageWidthMm} / ${pageHeightMm}`);
@@ -197,6 +201,7 @@
             month={ym.month}
             {weekStart}
             {events}
+            fontFamily={calendarFontFamily}
             showHeading={true}
           />
         </div>

@@ -16,6 +16,9 @@ export interface ProjectRow {
   slot_corner_radius_px: number;
   page_size_w_mm: number;
   page_size_h_mm: number;
+  /** Google Fonts family name applied to the calendar grid (heading,
+   *  day headers, dates). NULL = app default (monospace). */
+  calendar_font_family: string | null;
 }
 
 export interface CalendarEventRow {

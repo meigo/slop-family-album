@@ -86,6 +86,14 @@ export async function updateProjectSlotCornerRadius(id: number, radiusPx: number
   await d.execute('UPDATE project SET slot_corner_radius_px = ? WHERE id = ?', [clamped, id]);
 }
 
+/** null = app default (monospace). Caller is expected to invoke
+ *  loadGoogleFont before persisting a non-null value so the font is
+ *  available to the renderer on next paint. */
+export async function updateProjectCalendarFontFamily(id: number, family: string | null): Promise<void> {
+  const d = await db();
+  await d.execute('UPDATE project SET calendar_font_family = ? WHERE id = ?', [family, id]);
+}
+
 export async function upsertPhoto(p: PhotoInsert): Promise<void> {
   const d = await db();
   await d.execute(

@@ -13,8 +13,12 @@
     locale?: string;
     /** Show the month/year heading above the grid. Default true. */
     showHeading?: boolean;
+    /** Optional Google Font family for the entire grid. null/undefined =
+     *  inherit (app default monospace). Caller is responsible for
+     *  loading the font; this component only sets font-family. */
+    fontFamily?: string | null;
   }
-  let { year, month, weekStart, events, locale, showHeading = true }: Props = $props();
+  let { year, month, weekStart, events, locale, showHeading = true, fontFamily = null }: Props = $props();
 
   let grid = $derived<CalendarGrid>(buildCalendarGrid(year, month, weekStart, locale));
   let heading = $derived(monthLabel(year, month, locale));
@@ -43,7 +47,7 @@
   }
 </script>
 
-<div class="w-full h-full flex flex-col" style="font-size: 0.65em;">
+<div class="w-full h-full flex flex-col" style="font-size: 0.65em;{fontFamily ? ` font-family: '${fontFamily.replace(/'/g, "\\'")}', sans-serif;` : ''}">
   {#if showHeading}
     <div class="text-center font-medium mb-1" style="font-size: 1.4em;">{heading}</div>
   {/if}

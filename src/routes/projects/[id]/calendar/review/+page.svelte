@@ -7,9 +7,12 @@
   import TextEditor from '$lib/components/TextEditor.svelte';
   import { getTemplate } from '$lib/layout/templates';
   import { invalidateAll } from '$app/navigation';
-  import { updateSlotPhoto, clearSlotPhoto, insertBlankPage, updateProjectSlotGap, updateProjectPagePadding, updateProjectPageBgColor, updateProjectPageSize, updateProjectWeekStart, addPageText } from '$lib/db';
+  import { updateSlotPhoto, clearSlotPhoto, insertBlankPage, updateProjectSlotGap, updateProjectPagePadding, updateProjectPageBgColor, updateProjectPageSize, updateProjectWeekStart, updateProjectCalendarFontFamily, addPageText } from '$lib/db';
   import { DEFAULT_TEXT_STYLE, serializeStyle } from '$lib/text/style';
   import { PAPER_PRESETS } from '$lib/print/presets';
+  import { FONT_CATALOG } from '$lib/text/catalog';
+  import { loadGoogleFont } from '$lib/text/fonts';
+  import { onMount } from 'svelte';
 
   let { data } = $props();
 
@@ -25,6 +28,21 @@
   let pageWidthMm = $state(data.project.page_size_w_mm);
   // svelte-ignore state_referenced_locally
   let pageHeightMm = $state(data.project.page_size_h_mm);
+  // svelte-ignore state_referenced_locally
+  let calendarFontFamily = $state<string | null>(data.project.calendar_font_family);
+
+  // Preload the saved font on mount so the first paint already has it.
+  onMount(() => {
+    if (calendarFontFamily) loadGoogleFont(calendarFontFamily);
+  });
+
+  async function onCalendarFontChange(e: Event) {
+    const v = (e.currentTarget as HTMLSelectElement).value;
+    const next = v === '' ? null : v;
+    if (next) loadGoogleFont(next);
+    calendarFontFamily = next;
+    await updateProjectCalendarFontFamily(data.project.id, next);
+  }
 
   async function onPageBgChange(e: Event) {
     const v = (e.currentTarget as HTMLInputElement).value;
@@ -195,6 +213,19 @@
       <span style="font-variant-numeric: tabular-nums;">{pageWidthMm}×{pageHeightMm}mm</span>
     </label>
     <label class="text-sm mt-1 flex items-center gap-2" style="color: var(--color-muted)">
+      calendar font:
+      <select onchange={onCalendarFontChange} style="background: var(--color-surface); border: 1px solid var(--color-line); border-radius: 4px; padding: 2px 6px; font-size: 0.75rem;">
+        <option value="" selected={calendarFontFamily === null}>App default (mono)</option>
+        {#each ['sans-serif', 'serif', 'handwriting', 'display', 'monospace'] as category}
+          <optgroup label={category}>
+            {#each FONT_CATALOG.filter((f) => f.category === category) as font}
+              <option value={font.family} selected={font.family === calendarFontFamily}>{font.family}</option>
+            {/each}
+          </optgroup>
+        {/each}
+      </select>
+    </label>
+    <label class="text-sm mt-1 flex items-center gap-2" style="color: var(--color-muted)">
       week starts:
       <button
         type="button"
@@ -240,6 +271,7 @@
               {pageBgColor}
               {pageWidthMm}
               {pageHeightMm}
+              {calendarFontFamily}
               slotCornerRadiusPx={data.project.slot_corner_radius_px}
               pageTitle={page.title}
               events={data.events}
