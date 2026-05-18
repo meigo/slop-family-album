@@ -99,7 +99,12 @@
 
   <!-- Photo library: index + maintenance actions on the source folder -->
   <section class="surface-card mt-4">
-    <h2 class="text-lg font-medium mb-2">Photo library</h2>
+    <h2 class="text-lg font-medium mb-1">Photo library</h2>
+    <p class="text-sm mb-3" style="color: var(--color-muted)">
+      The app reads photos from the source folder, extracts dates and camera
+      info from EXIF, and scores each photo on-device (blur, faces, scenes,
+      exposure) so it can pick the best ones for the album and calendar.
+    </p>
     <p>
       Indexed: <strong>{data.count}</strong> photos
       {#if data.lastIndexedAt !== null}
@@ -115,9 +120,9 @@
         class="btn-secondary"
         onclick={runReCv}
         disabled={mine && (pStateLocal.phase === 'walking' || pStateLocal.phase === 'indexing')}
-        title="Force-recompute CV scores for all photos (use after the blur/faces algorithm changes)"
+        title="Recompute the per-photo quality scores from scratch. Useful after the underlying analysis algorithm changes."
       >
-        Re-run CV
+        Re-analyze photos
       </button>
       <a class="btn-secondary" href={`/projects/${data.project.id}/library`}>Open library</a>
     </div>
@@ -142,7 +147,12 @@
 
   <!-- Outputs: album book + wall calendar generated from the indexed photos -->
   <section class="surface-card mt-4">
-    <h2 class="text-lg font-medium mb-2">Outputs</h2>
+    <h2 class="text-lg font-medium mb-1">Outputs</h2>
+    <p class="text-sm mb-3" style="color: var(--color-muted)">
+      Generate a printable photo book and a matching wall calendar from the
+      indexed photos. Both can be regenerated, re-styled, and exported to PDF
+      any time without re-indexing.
+    </p>
     <label class="flex items-center gap-2 text-sm" style="color: var(--color-muted)">
       Album max pages:
       <input
