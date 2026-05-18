@@ -46,7 +46,8 @@
       "
     >
       {#each Array(lineCount) as _, i}
-        <div style="position: absolute; left: 0; right: 0; top: {((i + 1) / (lineCount + 1)) * 100}%; height: 1px; background: var(--color-muted); opacity: 0.7;"></div>
+        {@const pct = (i / (lineCount - 1)) * 100}
+        <div style="position: absolute; left: 0; right: 0; top: {pct}%; height: 1px; background: var(--color-muted); opacity: 0.7; transform: translateY({i === lineCount - 1 ? '-1px' : '0'});"></div>
       {/each}
     </div>
   {/if}
