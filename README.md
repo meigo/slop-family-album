@@ -8,6 +8,8 @@ for a print shop.
 
 All photo data and analysis stays on your machine — nothing leaves the computer.
 
+<video src="sample-albums/puppets_demo.mp4" controls width="100%"></video>
+
 ## Features
 
 **Library**
