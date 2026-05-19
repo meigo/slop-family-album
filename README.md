@@ -8,7 +8,9 @@ for a print shop.
 
 All photo data and analysis stays on your machine — nothing leaves the computer.
 
-<video src="docs/media/puppets_demo.mp4" controls width="100%"></video>
+<video controls width="100%">
+  <source src="https://github.com/meigo/slop-photo-album/raw/main/docs/media/puppets_demo.mp4" type="video/mp4">
+</video>
 
 ## Features
 
