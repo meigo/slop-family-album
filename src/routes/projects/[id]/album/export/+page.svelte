@@ -3,10 +3,34 @@
   import PageView from '$lib/components/PageView.svelte';
   import { paperForSize } from '$lib/print/sizes';
   import { exportPagesToPdf } from '$lib/print/prepare';
+  import { loadGoogleFont } from '$lib/text/fonts';
+  import { parseStyle } from '$lib/text/style';
   import { Printer } from '@lucide/svelte';
   import { convertFileSrc } from '@tauri-apps/api/core';
+  import { onMount } from 'svelte';
 
   let { data } = $props();
+
+  // Preload every text-overlay font on mount so @font-face rules are
+  // registered (and binaries cached) by the time the user clicks Save.
+  // Without this, fonts load lazily as each TextOverlay mounts, and
+  // awaitReady's fonts.ready can race-resolve before the dynamically
+  // injected <link> stylesheets have registered any FontFaces —
+  // modern-screenshot then walks an empty CSSOM and the PDF falls
+  // back to system fonts.
+  onMount(() => {
+    const seen = new Set<string>();
+    for (const texts of data.textsByPage.values()) {
+      for (const text of texts) {
+        const style = parseStyle(text.style_json);
+        if (!style) continue;
+        const key = `${style.fontFamily}:${style.fontWeight}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        loadGoogleFont(style.fontFamily, [style.fontWeight]);
+      }
+    }
+  });
 
   let exporting = $state(false);
   let savedPath = $state<string | null>(null);
