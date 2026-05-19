@@ -45,8 +45,6 @@ py-sidecar/tests/**/__pycache__/
 
 temp/
 
-# Fixture generator output. The puppets_demo.mp4 demo is intentionally
-# tracked; the rest of sample-albums/ is synthetic fixture data.
-sample-albums/*
-!sample-albums/puppets_demo.mp4
+# Fixture generator output
+sample-albums/
 tools/fixtures/.cache/
