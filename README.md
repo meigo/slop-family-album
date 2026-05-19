@@ -8,9 +8,17 @@ for a print shop.
 
 All photo data and analysis stays on your machine — nothing leaves the computer.
 
-<video controls width="100%">
-  <source src="https://github.com/meigo/slop-photo-album/raw/main/docs/media/puppets_demo.mp4" type="video/mp4">
-</video>
+<!--
+  Inline video player: GitHub's CSP only renders <video> for assets on
+  github.com/user-attachments/assets/<UUID>. Raw repo URLs and relative
+  paths don't play. Workflow to upgrade the link below to an inline
+  player: open a new issue (draft) on github.com, drag-drop
+  docs/media/puppets_demo.mp4 into the comment box, copy the URL
+  GitHub generates, paste it into a <video src="..." controls> tag
+  here, discard the issue draft.
+-->
+
+[Watch the puppets demo](docs/media/puppets_demo.mp4) — short walkthrough of indexing, review, and PDF export.
 
 ## Features
 
