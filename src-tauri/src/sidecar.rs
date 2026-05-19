@@ -30,8 +30,10 @@ pub async fn start_sidecar(app: &AppHandle) -> Result<u16, String> {
     .path()
     .resource_dir()
     .map_err(|e| format!("resource_dir: {e}"))?;
-  // In dev mode, sidecar/ lives next to src-tauri; in prod it's bundled in resources.
-  // v1 ships dev-mode only — production bundling is Phase 2+.
+  // Dev: sidecar/ lives next to src-tauri/, `node` is on PATH.
+  // Prod: sidecar/ is copied into resource_dir by tauri.conf.json
+  // bundle.resources; a portable node.exe is staged into sidecar/ by
+  // the release workflow and lives next to node_modules/.
   // Canonicalize the dev path so the `..` segments are resolved before we pass
   // anything to Node — `realpathSync` on Windows walks each segment and trips
   // on `D:` (no trailing backslash) when the path still contains `..`.
@@ -60,14 +62,22 @@ pub async fn start_sidecar(app: &AppHandle) -> Result<u16, String> {
     .join("cli.mjs");
   let server_ts = sidecar_dir.join("src").join("server.ts");
 
-  let mut child = Command::new("node")
+  // Dev: trust PATH `node` (developer has it installed).
+  // Prod: use the bundled node.exe shipped alongside node_modules.
+  let node_cmd: std::ffi::OsString = if cfg!(debug_assertions) {
+    "node".into()
+  } else {
+    sidecar_dir.join(if cfg!(windows) { "node.exe" } else { "node" }).into_os_string()
+  };
+
+  let mut child = Command::new(&node_cmd)
     .arg(&tsx_cli)
     .arg(&server_ts)
     .stdout(Stdio::piped())
     .stderr(Stdio::inherit())
     .current_dir(&sidecar_dir)
     .spawn()
-    .map_err(|e| format!("spawn sidecar (node {}): {e}", tsx_cli.display()))?;
+    .map_err(|e| format!("spawn sidecar ({} {}): {e}", node_cmd.to_string_lossy(), tsx_cli.display()))?;
 
   let stdout = child.stdout.take().ok_or("no stdout")?;
   let mut reader = BufReader::new(stdout).lines();

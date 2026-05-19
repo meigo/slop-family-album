@@ -126,14 +126,22 @@ draw from already lives on each photo record.
 
 ## Releases
 
-No release pipeline yet — the app is dev-mode only (see the Phase 2+ note in
-`src-tauri/src/sidecar.rs`). The two sidecars currently expect `node` on PATH
-and a `py-sidecar/.venv` next to the binary, so a `tauri build` installer
-would crash on launch.
+Friends-and-family scope. Windows x64 only. Unsigned binaries, no auto-update.
+Cutting a release is a one-liner:
 
-A friends-and-family release pipeline is being designed — see
-`docs/superpowers/specs/` once the design doc lands. Initial scope is Windows
-x64, unsigned, no auto-update, distributed via GitHub Releases on `v*` tags.
+```
+git tag v0.1.0 && git push origin v0.1.0
+```
+
+GitHub Actions runs `.github/workflows/release.yml` on `v*` tags: builds the
+Tauri installer with a bundled portable Node and a self-contained Python
+(`python-build-standalone`) carrying every CV dependency in its
+`site-packages`. The resulting `.exe` / `.msi` lands on the matching GitHub
+Release as a downloadable asset.
+
+**Expect a SmartScreen warning on first launch** ("Windows protected your PC")
+because the binary is unsigned. Click *More info* → *Run anyway*. Code signing
+is out of scope for the friends-and-family release.
 
 ## License
 

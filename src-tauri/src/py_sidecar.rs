@@ -40,11 +40,23 @@ pub async fn start_py_sidecar(app: &AppHandle) -> Result<u16, String> {
     resource_dir.join("py-sidecar")
   };
 
-  // The venv's python lives at .venv/bin/python on Unix, .venv/Scripts/python.exe on Windows.
-  let python_exe = if cfg!(windows) {
-    py_dir.join(".venv").join("Scripts").join("python.exe")
+  // Dev: a venv at .venv/ (uv sync). Prod: python-build-standalone
+  // extracted into py-sidecar/python/ by the release workflow, with the
+  // `server` package + deps pip-installed into its site-packages (no
+  // venv — venvs hardcode absolute paths in pyvenv.cfg and don't
+  // survive being copied to an end-user's machine).
+  let python_exe = if cfg!(debug_assertions) {
+    if cfg!(windows) {
+      py_dir.join(".venv").join("Scripts").join("python.exe")
+    } else {
+      py_dir.join(".venv").join("bin").join("python")
+    }
   } else {
-    py_dir.join(".venv").join("bin").join("python")
+    if cfg!(windows) {
+      py_dir.join("python").join("python.exe")
+    } else {
+      py_dir.join("python").join("bin").join("python3")
+    }
   };
 
   let mut child = Command::new(&python_exe)

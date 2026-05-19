@@ -1,0 +1,81 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Stage Node sidecar (deps + bundled node.exe)
+        shell: pwsh
+        run: |
+          # Install sidecar's node_modules locked to package-lock.json.
+          npm --prefix sidecar ci
+
+          # Download portable Node 22 LTS for the bundled runtime. The
+          # app spawns this node.exe in prod instead of relying on the
+          # end user having Node on PATH.
+          $nodeVer = "v22.22.3"
+          $nodeUrl = "https://nodejs.org/dist/$nodeVer/node-$nodeVer-win-x64.zip"
+          Invoke-WebRequest $nodeUrl -OutFile node.zip
+          Expand-Archive node.zip -DestinationPath node-dl
+          Copy-Item "node-dl/node-$nodeVer-win-x64/node.exe" "sidecar/node.exe"
+          Remove-Item -Recurse -Force node-dl, node.zip
+
+      - name: Stage Python sidecar (python-build-standalone + deps)
+        shell: pwsh
+        run: |
+          # python-build-standalone is a self-contained, relocatable
+          # CPython. We extract it into py-sidecar/python/ and pip-install
+          # the FastAPI server + its deps directly into its site-packages.
+          # No venv (pyvenv.cfg has absolute paths and doesn't survive
+          # being copied to an end user's machine).
+          $pbsTag = "20260510"
+          $pbsVer = "3.11.15"
+          $pbsAsset = "cpython-$pbsVer+$pbsTag-x86_64-pc-windows-msvc-install_only_stripped.tar.gz"
+          $pbsUrl = "https://github.com/astral-sh/python-build-standalone/releases/download/$pbsTag/$pbsAsset"
+          Invoke-WebRequest $pbsUrl -OutFile py.tar.gz
+          # tar is built into Windows 10+. Extracts to ./python/ at cwd.
+          Push-Location py-sidecar
+          tar -xzf ../py.tar.gz
+          .\python\python.exe -m ensurepip --upgrade
+          .\python\python.exe -m pip install --upgrade pip
+          .\python\python.exe -m pip install --no-warn-script-location .
+          Pop-Location
+          Remove-Item py.tar.gz
+
+      - name: Build + publish release
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: ${{ github.ref_name }}
+          releaseBody: |
+            Friends-and-family release. Unsigned — Windows SmartScreen
+            will warn on first launch ("Windows protected your PC" →
+            **More info** → **Run anyway**). All photo data stays on
+            your machine.
+          releaseDraft: false
+          prerelease: false
+          args: --target x86_64-pc-windows-msvc

@@ -29,6 +29,8 @@ vite.config.ts.timestamp-*
 
 # Sidecar
 sidecar/coverage/
+# Bundled node.exe — downloaded by the release workflow, not source.
+sidecar/node.exe
 
 # Rust / Tauri
 src-tauri/target/
@@ -42,6 +44,8 @@ py-sidecar/.pytest_cache/
 py-sidecar/__pycache__/
 py-sidecar/src/**/__pycache__/
 py-sidecar/tests/**/__pycache__/
+# python-build-standalone extracted by the release workflow, not source.
+py-sidecar/python/
 
 temp/
 
