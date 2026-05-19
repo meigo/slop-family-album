@@ -110,3 +110,29 @@ Python for CV models that need PyTorch/OpenCV).
 
 All photo data and ML inference is local. The Google Fonts CSS is the only
 outbound request, and only when a non-default font is used.
+
+## Not on the roadmap
+
+**Per-photo LLM captions** were in the original design doc (local Ollama +
+Gemma, with optional Claude opt-in) but won't ship. Photo albums rarely
+benefit from labeling every photo, and the existing text-overlay feature
+already covers the cases where a page genuinely wants text — album titles,
+chapter or month headers, the occasional standout caption. A structured
+caption field invites "fill every box" prose generation that produces
+clichés the photos don't need; the date / GPS / scene tag / face name data
+the LLM would draw from already lives on each photo record.
+
+## Releases
+
+No release pipeline yet — the app is dev-mode only (see the Phase 2+ note in
+`src-tauri/src/sidecar.rs`). The two sidecars currently expect `node` on PATH
+and a `py-sidecar/.venv` next to the binary, so a `tauri build` installer
+would crash on launch.
+
+A friends-and-family release pipeline is being designed — see
+`docs/superpowers/specs/` once the design doc lands. Initial scope is Windows
+x64, unsigned, no auto-update, distributed via GitHub Releases on `v*` tags.
+
+## License
+
+[MIT](LICENSE)
