@@ -1327,7 +1327,7 @@ wheels = [
 ]
 
 [[package]]
-name = "slop-family-album-py-sidecar"
+name = "slop-photo-album-py-sidecar"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [

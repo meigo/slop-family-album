@@ -25,9 +25,9 @@
   class="absolute overlay-text"
   class:interactive
   style="
-    left: calc({pagePaddingPx}px + {text.position_x} * (100% - {2 * pagePaddingPx}px));
-    top: calc({pagePaddingPx}px + {text.position_y} * (100% - {2 * pagePaddingPx}px));
-    max-width: calc({1 - text.position_x} * (100% - {2 * pagePaddingPx}px));
+    left: calc({pagePaddingPx / 10}cqi + {text.position_x} * (100% - {pagePaddingPx / 5}cqi));
+    top: calc({pagePaddingPx / 10}cqi + {text.position_y} * (100% - {pagePaddingPx / 5}cqi));
+    max-width: calc({1 - text.position_x} * (100% - {pagePaddingPx / 5}cqi));
     width: max-content;
     {cssForStyle(style)};
     z-index: 3;

@@ -114,9 +114,9 @@
   bind:this={wrapperEl}
   class="absolute"
   style="
-    left: calc({pagePaddingPx}px + {pos.x} * (100% - {2 * pagePaddingPx}px));
-    top: calc({pagePaddingPx}px + {pos.y} * (100% - {2 * pagePaddingPx}px));
-    max-width: calc({1 - pos.x} * (100% - {2 * pagePaddingPx}px));
+    left: calc({pagePaddingPx / 10}cqi + {pos.x} * (100% - {pagePaddingPx / 5}cqi));
+    top: calc({pagePaddingPx / 10}cqi + {pos.y} * (100% - {pagePaddingPx / 5}cqi));
+    max-width: calc({1 - pos.x} * (100% - {pagePaddingPx / 5}cqi));
     width: max-content;
     min-width: 30px;
     z-index: 5;
@@ -146,9 +146,9 @@
   class="toolbar"
   style="
     position: absolute;
-    left: calc({pagePaddingPx}px + {pos.x} * (100% - {2 * pagePaddingPx}px));
-    bottom: calc(100% - {pagePaddingPx}px - {pos.y} * (100% - {2 * pagePaddingPx}px) + 4px);
-    max-width: calc({1 - pos.x} * (100% - {2 * pagePaddingPx}px));
+    left: calc({pagePaddingPx / 10}cqi + {pos.x} * (100% - {pagePaddingPx / 5}cqi));
+    bottom: calc(100% - {pagePaddingPx / 10}cqi - {pos.y} * (100% - {pagePaddingPx / 5}cqi) + 4px);
+    max-width: calc({1 - pos.x} * (100% - {pagePaddingPx / 5}cqi));
     z-index: var(--z-toolbar);
   "
     onpointerdown={(e) => e.stopPropagation()}

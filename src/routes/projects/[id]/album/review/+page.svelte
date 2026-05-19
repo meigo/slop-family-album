@@ -294,7 +294,7 @@
               />
             </div>
           </div>
-          <div class="relative">
+          <div class="relative" style="container-type: inline-size;">
             <PageView
               templateId={page.template_id}
               slots={data.slotsByPage.get(page.id) ?? []}
@@ -328,11 +328,11 @@
                 <div
                   class="absolute"
                   style="
-                    left: calc({pagePaddingPx}px + {editorLayout.x} * (100% - {2 * pagePaddingPx}px));
-                    top: calc({pagePaddingPx}px + {editorLayout.y} * (100% - {2 * pagePaddingPx}px));
-                    width: calc({editorLayout.w} * (100% - {2 * pagePaddingPx}px));
-                    height: calc({editorLayout.h} * (100% - {2 * pagePaddingPx}px));
-                    padding: {ePadTop}px {ePadRight}px {ePadBottom}px {ePadLeft}px;
+                    left: calc({pagePaddingPx / 10}cqi + {editorLayout.x} * (100% - {pagePaddingPx / 5}cqi));
+                    top: calc({pagePaddingPx / 10}cqi + {editorLayout.y} * (100% - {pagePaddingPx / 5}cqi));
+                    width: calc({editorLayout.w} * (100% - {pagePaddingPx / 5}cqi));
+                    height: calc({editorLayout.h} * (100% - {pagePaddingPx / 5}cqi));
+                    padding: {ePadTop / 10}cqi {ePadRight / 10}cqi {ePadBottom / 10}cqi {ePadLeft / 10}cqi;
                     z-index: 4;
                   "
                 >

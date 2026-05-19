@@ -62,7 +62,7 @@
     "_meta": { "title": "VAE Decode" }
   },
   "9": {
-    "inputs": { "filename_prefix": "slop_family_album", "images": ["8", 0] },
+    "inputs": { "filename_prefix": "slop_photo_album", "images": ["8", 0] },
     "class_type": "SaveImage",
     "_meta": { "title": "Save Image" }
   }

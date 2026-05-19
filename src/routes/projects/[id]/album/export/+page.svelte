@@ -145,8 +145,12 @@
     margin: 1rem auto 4rem;
     padding: 0 1rem;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1rem;
+    /* One page per row at the review page's working width so cqi-based
+     *  gaps render above 1 CSS px in the DOM. The rasterizer captures
+     *  what the DOM lays out — sub-pixel gaps that get rounded away on
+     *  a small thumbnail can't be recovered by the scale multiplier. */
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
   }
   .print-page {
     width: 100%;

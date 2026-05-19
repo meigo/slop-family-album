@@ -120,11 +120,11 @@
     <div
       class="absolute group"
       style="
-        left: calc({pagePaddingPx}px + {slotLayout.x} * (100% - {2 * pagePaddingPx}px));
-        top: calc({pagePaddingPx}px + {slotLayout.y} * (100% - {2 * pagePaddingPx}px));
-        width: calc({slotLayout.w} * (100% - {2 * pagePaddingPx}px));
-        height: calc({slotLayout.h} * (100% - {2 * pagePaddingPx}px));
-        padding: {padTop}px {padRight}px {padBottom}px {padLeft}px;
+        left: calc({pagePaddingPx / 10}cqi + {slotLayout.x} * (100% - {pagePaddingPx / 5}cqi));
+        top: calc({pagePaddingPx / 10}cqi + {slotLayout.y} * (100% - {pagePaddingPx / 5}cqi));
+        width: calc({slotLayout.w} * (100% - {pagePaddingPx / 5}cqi));
+        height: calc({slotLayout.h} * (100% - {pagePaddingPx / 5}cqi));
+        padding: {padTop / 10}cqi {padRight / 10}cqi {padBottom / 10}cqi {padLeft / 10}cqi;
       "
     >
       <div class="relative w-full h-full overflow-hidden" style="border-radius: {slotCornerRadiusPx}px;">
@@ -201,8 +201,8 @@
       type="button"
       class="absolute swap-edge-btn opacity-0 group-hover:opacity-100 transition-opacity"
       style="
-        left: calc({pagePaddingPx}px + {edge.x} * (100% - {2 * pagePaddingPx}px));
-        top: calc({pagePaddingPx}px + {edge.y} * (100% - {2 * pagePaddingPx}px));
+        left: calc({pagePaddingPx / 10}cqi + {edge.x} * (100% - {pagePaddingPx / 5}cqi));
+        top: calc({pagePaddingPx / 10}cqi + {edge.y} * (100% - {pagePaddingPx / 5}cqi));
       "
       onclick={(e) => { e.stopPropagation(); onSwapSlots?.(edge.slotA, edge.slotB); }}
       title="Swap these two photos"
@@ -222,11 +222,11 @@
       <div
         class="absolute"
         style="
-          left: calc({pagePaddingPx}px + {tpl.calendarGrid.x} * (100% - {2 * pagePaddingPx}px));
-          top: calc({pagePaddingPx}px + {tpl.calendarGrid.y} * (100% - {2 * pagePaddingPx}px));
-          width: calc({tpl.calendarGrid.w} * (100% - {2 * pagePaddingPx}px));
-          height: calc({tpl.calendarGrid.h} * (100% - {2 * pagePaddingPx}px));
-          padding: {slotGapPx / 2}px;
+          left: calc({pagePaddingPx / 10}cqi + {tpl.calendarGrid.x} * (100% - {pagePaddingPx / 5}cqi));
+          top: calc({pagePaddingPx / 10}cqi + {tpl.calendarGrid.y} * (100% - {pagePaddingPx / 5}cqi));
+          width: calc({tpl.calendarGrid.w} * (100% - {pagePaddingPx / 5}cqi));
+          height: calc({tpl.calendarGrid.h} * (100% - {pagePaddingPx / 5}cqi));
+          padding: {slotGapPx / 20}cqi;
         "
       >
         <!-- font-size in cqi (% of PageView width) so the calendar grid

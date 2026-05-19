@@ -55,7 +55,7 @@ async function writeExif(photo: PhotoEntry): Promise<void> {
     OffsetTimeDigitized: photo.timezone,
     Make: photo.camera.make,
     Model: photo.camera.model,
-    Software: "slop-family-album fixtures",
+    Software: "slop-photo-album fixtures",
     ImageDescription: `Synthetic ${photo.style} fixture: ${photo.event}`,
   };
   if (photo.camera.lensModel) tags.LensModel = photo.camera.lensModel;
