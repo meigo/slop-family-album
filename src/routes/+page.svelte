@@ -1,24 +1,26 @@
 <script lang="ts">
-  import PageHeader from '$lib/components/PageHeader.svelte';
-  import { open } from '@tauri-apps/plugin-dialog';
-  import { createProject, listProjectsWithThumbs, deleteProject, type ProjectWithThumb } from '$lib/db';
-  import { convertFileSrc } from '@tauri-apps/api/core';
-  import { goto } from '$app/navigation';
-  import { onMount } from 'svelte';
-  import { LayoutDashboard, Trash2, Plus } from '@lucide/svelte';
-  import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
+  import PageHeader from "$lib/components/PageHeader.svelte";
+  import { open } from "@tauri-apps/plugin-dialog";
+  import { createProject, listProjectsWithThumbs, deleteProject, type ProjectWithThumb } from "$lib/db";
+  import { convertFileSrc } from "@tauri-apps/api/core";
+  import { goto } from "$app/navigation";
+  import { onMount } from "svelte";
+  import { LayoutDashboard, Trash2, Plus } from "@lucide/svelte";
+  import ConfirmDialog from "$lib/components/ConfirmDialog.svelte";
 
   let projects = $state<ProjectWithThumb[]>([]);
-  let name = $state('');
+  let name = $state("");
   let albumYear = $state(new Date().getFullYear() - 1);
-  let sourceDir = $state('');
+  let sourceDir = $state("");
   let newProjectOpen = $state(false);
 
-  onMount(async () => { projects = await listProjectsWithThumbs(); });
+  onMount(async () => {
+    projects = await listProjectsWithThumbs();
+  });
 
   function openNewProject() {
-    name = '';
-    sourceDir = '';
+    name = "";
+    sourceDir = "";
     albumYear = new Date().getFullYear() - 1;
     newProjectOpen = true;
   }
@@ -29,7 +31,7 @@
 
   async function pickDir() {
     const result = await open({ directory: true, multiple: false });
-    if (typeof result === 'string') sourceDir = result;
+    if (typeof result === "string") sourceDir = result;
   }
 
   async function create() {
@@ -50,7 +52,7 @@
   }
 
   function onModalKey(e: KeyboardEvent) {
-    if (newProjectOpen && e.key === 'Escape') closeNewProject();
+    if (newProjectOpen && e.key === "Escape") closeNewProject();
   }
 </script>
 
@@ -64,11 +66,9 @@
     </h1>
   </PageHeader>
 
-  <p class="mt-2 max-w-3xl" style="color: var(--color-muted); line-height: 1.5;">
-    Build a printable photo book and matching wall calendar from a year of your photos.
-    The app indexes a source folder, scores photos with on-device computer vision,
-    auto-assembles pages you can review and tweak, and exports both as PDFs ready
-    for a print shop.
+  <p class="mt-2" style="color: var(--color-muted); line-height: 1.5;">
+    Build a printable photo book and matching wall calendar from a year of your photos. The app indexes a source folder, scores photos with
+    on-device computer vision, auto-assembles pages you can review and tweak, and exports both as PDFs ready for a print shop.
   </p>
 
   <section class="mt-6">
@@ -80,9 +80,7 @@
     </div>
 
     {#if projects.length === 0}
-      <p class="surface-card" style="color: var(--color-muted)">
-        No projects yet. Click "New project" to create one.
-      </p>
+      <p class="surface-card" style="color: var(--color-muted)">No projects yet. Click "New project" to create one.</p>
     {:else}
       <ul class="grid gap-3" style="grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));">
         {#each projects as p}
@@ -95,13 +93,13 @@
                   class="block w-full"
                   style="aspect-ratio: 4 / 3; object-fit: cover; background: var(--color-line);"
                   loading="lazy"
-                  draggable="false"
-                />
+                  draggable="false" />
               {:else}
                 <div
                   class="w-full flex items-center justify-center text-xs"
-                  style="aspect-ratio: 4 / 3; background: var(--color-line); color: var(--color-muted);"
-                >Not indexed yet</div>
+                  style="aspect-ratio: 4 / 3; background: var(--color-line); color: var(--color-muted);">
+                  Not indexed yet
+                </div>
               {/if}
               <div class="flex flex-col gap-1" style="padding: var(--space-3);">
                 <span class="font-medium pr-6">{p.name}</span>
@@ -114,8 +112,7 @@
               style="width: 24px; height: 24px; color: var(--color-danger);"
               onclick={() => (pendingDelete = p)}
               title="Delete project"
-              aria-label={`Delete project ${p.name}`}
-            >
+              aria-label={`Delete project ${p.name}`}>
               <Trash2 size={14} />
             </button>
           </li>
@@ -136,8 +133,7 @@
         aria-modal="true"
         aria-labelledby="new-project-title"
         tabindex="-1"
-        onclick={(e) => e.stopPropagation()}
-      >
+        onclick={(e) => e.stopPropagation()}>
         <h2 id="new-project-title" class="text-lg font-medium mb-3">New project</h2>
         <label class="block mb-2">
           <span class="text-sm" style="color: var(--color-muted)">Name</span>
@@ -170,7 +166,6 @@
       confirmLabel="Delete"
       danger
       onConfirm={confirmDelete}
-      onCancel={() => (pendingDelete = null)}
-    />
+      onCancel={() => (pendingDelete = null)} />
   {/if}
 </div>
